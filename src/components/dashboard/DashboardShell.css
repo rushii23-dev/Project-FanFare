@@ -1,0 +1,520 @@
+/* ============================================================
+   FanFare — Dashboard Shell Styles
+   Extends the ff-* naming convention for portal chrome
+   ============================================================ */
+
+/* ---------- keyframes (dashboard-specific) ---------- */
+@keyframes ff-pulse-accent { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@keyframes ff-record { 0%,100% { box-shadow: 0 0 0 0 rgba(226,58,69,0.5); } 50% { box-shadow: 0 0 0 12px rgba(226,58,69,0); } }
+@keyframes ff-skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@keyframes ff-slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes ff-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ff-count { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+/* ---------- skeleton loader ---------- */
+.ff-skeleton {
+  background: linear-gradient(90deg, #1a1a1a 25%, #242424 50%, #1a1a1a 75%);
+  background-size: 400% 100%;
+  animation: ff-skeleton 1.8s ease infinite;
+  border-radius: 8px;
+}
+
+/* ---------- dashboard layout ---------- */
+.ff-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #070707;
+}
+
+.ff-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(9,9,9,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.ff-sidebar {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  bottom: 0;
+  width: 220px;
+  background: #0a0a0a;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  z-index: 30;
+}
+
+.ff-sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #9a9a9a;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  text-align: left;
+  width: 100%;
+}
+.ff-sidebar-tab:hover {
+  background: rgba(255,255,255,0.04);
+  color: #cfcfcf;
+}
+.ff-sidebar-tab.active {
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+  font-weight: 600;
+}
+.ff-sidebar-tab:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+
+.ff-sidebar-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ff-main {
+  margin-left: 220px;
+  margin-top: 64px;
+  flex: 1;
+  padding: 32px;
+  min-height: calc(100vh - 64px);
+  animation: ff-fade-in 0.4s ease both;
+}
+
+/* ---------- topbar elements ---------- */
+.ff-role-badge {
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid;
+}
+
+.ff-bell {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: #9a9a9a;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s, color 0.3s;
+}
+.ff-bell:hover { border-color: rgba(255,255,255,0.3); color: #ffffff; }
+.ff-bell:focus-visible { outline: 2px solid #2aa5e0; outline-offset: 2px; }
+
+.ff-bell-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  animation: ff-count 0.3s ease both;
+}
+
+.ff-avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  color: #f4f4f4;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.3s;
+}
+.ff-avatar-btn:hover { border-color: rgba(255,255,255,0.35); }
+.ff-avatar-btn:focus-visible { outline: 2px solid #2aa5e0; outline-offset: 2px; }
+
+/* ---------- avatar dropdown ---------- */
+.ff-avatar-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: #141414;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  animation: ff-fade-in 0.2s ease both;
+  z-index: 50;
+}
+.ff-avatar-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: #cfcfcf;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.ff-avatar-menu button:hover { background: rgba(255,255,255,0.06); }
+.ff-avatar-menu button:focus-visible { outline: 2px solid #2aa5e0; outline-offset: -2px; }
+
+/* ---------- notification panel ---------- */
+.ff-notif-panel {
+  position: fixed;
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 100vw;
+  background: #0e0e0e;
+  border-left: 1px solid rgba(255,255,255,0.10);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+  z-index: 45;
+  animation: ff-slide-in 0.3s cubic-bezier(0.2,0.7,0.2,1) both;
+  display: flex;
+  flex-direction: column;
+}
+
+.ff-notif-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ff-notif-item:hover { background: rgba(255,255,255,0.03); }
+.ff-notif-item.unread { border-left: 3px solid; }
+
+/* ---------- breadcrumb ---------- */
+.ff-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 13px;
+  color: #6c6c6c;
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+  border: none;
+  background: none;
+  padding: 0;
+}
+.ff-breadcrumb:hover { color: #cfcfcf; }
+.ff-breadcrumb:focus-visible { outline: 2px solid #2aa5e0; outline-offset: 2px; }
+
+/* ---------- dashboard cards ---------- */
+.ff-dash-card {
+  background: #111111;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px;
+  transition: transform 0.4s cubic-bezier(0.2,0.7,0.2,1), border-color 0.3s, box-shadow 0.4s;
+}
+.ff-dash-card:hover {
+  border-color: rgba(255,255,255,0.18);
+}
+.ff-dash-card.interactive {
+  cursor: pointer;
+}
+.ff-dash-card.interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+.ff-dash-card:focus-visible {
+  outline: 2px solid #2aa5e0;
+  outline-offset: 2px;
+}
+
+/* ---------- status chips ---------- */
+.ff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.ff-chip-pending { background: rgba(255,165,0,0.15); color: #ffa500; }
+.ff-chip-progress { background: rgba(42,165,224,0.15); color: #2aa5e0; }
+.ff-chip-done { background: rgba(47,162,78,0.15); color: #2fa24e; }
+.ff-chip-new { background: rgba(226,58,69,0.15); color: #e23a45; }
+.ff-chip-assigned { background: rgba(42,165,224,0.15); color: #2aa5e0; }
+.ff-chip-resolved { background: rgba(47,162,78,0.15); color: #2fa24e; }
+
+.ff-chip-high { background: rgba(226,58,69,0.15); color: #e23a45; }
+.ff-chip-medium { background: rgba(255,165,0,0.15); color: #ffa500; }
+.ff-chip-low { background: rgba(47,162,78,0.15); color: #2fa24e; }
+
+/* ---------- toggle switch ---------- */
+.ff-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: #333;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.ff-toggle.on { background: #2fa24e; }
+.ff-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.ff-toggle.on::after { transform: translateX(20px); }
+.ff-toggle:focus-visible { outline: 2px solid #2aa5e0; outline-offset: 2px; }
+
+/* ---------- filter chips ---------- */
+.ff-filter-chip {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: #9a9a9a;
+  font-family: 'Hanken Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ff-filter-chip:hover { border-color: rgba(255,255,255,0.3); color: #cfcfcf; }
+.ff-filter-chip.active { background: rgba(255,255,255,0.08); color: #ffffff; border-color: rgba(255,255,255,0.3); }
+.ff-filter-chip:focus-visible { outline: 2px solid #2aa5e0; outline-offset: 2px; }
+
+/* ---------- empty state ---------- */
+.ff-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: #6c6c6c;
+}
+.ff-empty-icon { font-size: 40px; margin-bottom: 16px; display: block; }
+.ff-empty-text { font-size: 15px; line-height: 1.5; max-width: 320px; margin: 0 auto; }
+
+/* ---------- modal overlay ---------- */
+.ff-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ff-fade-in 0.2s ease both;
+}
+.ff-modal {
+  background: #141414;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 36px;
+  max-width: 440px;
+  width: calc(100% - 48px);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  animation: ff-fade-in 0.3s ease both;
+}
+
+/* ---------- chat UI ---------- */
+.ff-chat-thread {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ff-chat-bubble {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  animation: ff-fade-in 0.3s ease both;
+}
+.ff-chat-bubble.user {
+  align-self: flex-end;
+  background: #2aa5e0;
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+.ff-chat-bubble.system {
+  align-self: flex-start;
+  background: #1c1c1c;
+  color: #cfcfcf;
+  border-bottom-left-radius: 4px;
+}
+
+.ff-chat-input-row {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ---------- capacity gauge ---------- */
+.ff-gauge-track {
+  width: 100%;
+  height: 8px;
+  background: #1c1c1c;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ff-gauge-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.2,0.7,0.2,1);
+}
+
+/* ---------- status dot (for staff on-duty indicators) ---------- */
+.ff-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ff-status-dot.available { background: #2fa24e; box-shadow: 0 0 6px rgba(47,162,78,0.5); }
+.ff-status-dot.on-break { background: #ffa500; box-shadow: 0 0 6px rgba(255,165,0,0.5); }
+.ff-status-dot.off-duty { background: #6c6c6c; }
+
+/* ---------- recording button ---------- */
+.ff-mic-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(226,58,69,0.4);
+  background: rgba(226,58,69,0.1);
+  color: #e23a45;
+  font-size: 22px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ff-mic-btn:hover { border-color: #e23a45; background: rgba(226,58,69,0.2); }
+.ff-mic-btn.recording { animation: ff-record 1.5s ease infinite; border-color: #e23a45; background: rgba(226,58,69,0.25); }
+.ff-mic-btn:focus-visible { outline: 2px solid #e23a45; outline-offset: 4px; }
+
+/* ---------- drawer (gate detail, etc.) ---------- */
+.ff-drawer {
+  position: fixed;
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 100vw;
+  background: #0e0e0e;
+  border-left: 1px solid rgba(255,255,255,0.10);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+  z-index: 44;
+  animation: ff-slide-in 0.3s cubic-bezier(0.2,0.7,0.2,1) both;
+  overflow-y: auto;
+  padding: 28px;
+}
+
+/* ---------- focus-visible global override for dashboard ---------- */
+.ff-dashboard *:focus-visible {
+  outline: 2px solid var(--ff-accent, #2aa5e0);
+  outline-offset: 2px;
+}
+
+/* ---------- responsive: tablet ---------- */
+@media (max-width: 1024px) {
+  .ff-sidebar { width: 60px; padding: 16px 6px; }
+  .ff-sidebar-tab { padding: 10px; justify-content: center; }
+  .ff-sidebar-tab span:not(.ff-sidebar-icon) { display: none; }
+  .ff-main { margin-left: 60px; padding: 24px; }
+  .ff-notif-panel { width: 320px; }
+  .ff-drawer { width: 360px; }
+}
+
+/* ---------- responsive: mobile ---------- */
+@media (max-width: 768px) {
+  .ff-sidebar {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 64px;
+    flex-direction: row;
+    padding: 0 8px;
+    border-right: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 0;
+  }
+  .ff-sidebar-tab {
+    flex-direction: column;
+    padding: 8px 10px;
+    font-size: 10px;
+    gap: 4px;
+    min-width: 56px;
+  }
+  .ff-sidebar-tab span:not(.ff-sidebar-icon) { display: block; }
+  .ff-sidebar-icon { font-size: 20px; }
+  .ff-main {
+    margin-left: 0;
+    margin-bottom: 64px;
+    padding: 16px;
+  }
+  .ff-notif-panel { width: 100%; }
+  .ff-drawer { width: 100%; }
+  .ff-topbar { padding: 0 16px; }
+}

@@ -1,0 +1,108 @@
+/* ============================================================
+   FanFare — global styles
+   Keyframes + utility classes ported from FanFare.dc.html
+   ============================================================ */
+
+:root {
+  --ff-glow: 0.7; /* "Light" intensity — was an editor prop in the design */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #070707; }
+body {
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  color: #f4f4f4;
+  -webkit-font-smoothing: antialiased;
+}
+#root { min-height: 100vh; }
+a { color: #f4f4f4; text-decoration: none; }
+a:hover { color: #ffffff; }
+button { font-family: inherit; }
+::selection { background: #ffffff; color: #000000; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #070707; }
+::-webkit-scrollbar-thumb { background: #242424; border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+/* ---------- keyframes ---------- */
+@keyframes ff-rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ff-scroll { 0% { transform: translateY(0); opacity: .8; } 70% { transform: translateY(12px); opacity: 0; } 100% { opacity: 0; } }
+@keyframes ff-blink { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255,255,255,0.6); } 50% { opacity: .35; box-shadow: 0 0 14px 3px rgba(255,255,255,0.5); } }
+@keyframes ff-shimmer { 0% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+@keyframes ff-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes ff-drift { 0%,100% { transform: translate(0,0); } 50% { transform: translate(2%,-3%); } }
+@keyframes ff-shine { from { left: -140%; } to { left: 140%; } }
+@keyframes ff-beam { 0% { transform: translateX(-40%) skewX(-14deg); opacity: 0; } 30% { opacity: .55; } 100% { transform: translateX(230%) skewX(-14deg); opacity: 0; } }
+@keyframes ff-glowpulse { 0%,100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 0 34px rgba(255,255,255,0.04); } 50% { box-shadow: 0 0 0 1px rgba(255,255,255,0.26), 0 0 60px rgba(255,255,255,0.12); } }
+@keyframes ff-spin { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
+@keyframes ff-scan { 0% { transform: translateX(-120%); opacity: 0; } 8% { opacity: 1; } 46% { transform: translateX(520%); opacity: 1; } 56% { transform: translateX(520%); opacity: 0; } 100% { transform: translateX(520%); opacity: 0; } }
+@keyframes ff-textglow { 0%,100% { filter: drop-shadow(0 14px 44px rgba(0,0,0,0.72)) drop-shadow(0 0 24px rgba(255,255,255,0.10)); } 50% { filter: drop-shadow(0 14px 44px rgba(0,0,0,0.72)) drop-shadow(0 0 50px rgba(255,255,255,0.34)); } }
+@keyframes ff-impact { 0% { opacity: 0; transform: translateY(20px) scale(1.24); filter: blur(16px); } 55% { opacity: 1; transform: translateY(0) scale(0.972); filter: blur(0); } 74% { transform: scale(1.014); } 100% { transform: scale(1); } }
+@keyframes ff-hit-ring { 0% { opacity: 0; transform: translate(-50%,-50%) scale(0.2); } 12% { opacity: 0.7; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(2.3); } }
+@keyframes ff-hit-net { 0% { transform: scale(1) skewX(0deg); opacity: 0.12; } 18% { transform: scale(1.05) skewX(-2.8deg); opacity: 0.32; } 45% { transform: scale(1.008) skewX(1deg); opacity: 0.17; } 100% { transform: scale(1) skewX(0deg); opacity: 0.12; } }
+@keyframes ff-hit-text { 0% { transform: translate(0,0) skewX(0deg) scale(1); } 15% { transform: translate(-15px,3px) skewX(6deg) scale(1.06); } 37% { transform: translate(10px,0) skewX(-3.6deg) scale(0.972); } 58% { transform: translate(-6px,0) skewX(1.6deg) scale(1.008); } 78% { transform: translate(2px,0) skewX(-0.6deg); } 100% { transform: translate(0,0) skewX(0deg) scale(1); } }
+@keyframes ff-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+
+/* ---------- reveal-on-scroll ---------- */
+.ff-reveal { opacity: 0; transform: translateY(34px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
+.ff-reveal.ff-in { opacity: 1; transform: none; }
+.ff-d-1 { transition-delay: .09s; } .ff-d-2 { transition-delay: .18s; } .ff-d-3 { transition-delay: .27s; }
+
+/* ---------- entrance rise ---------- */
+.ff-rise { animation: ff-rise 1s cubic-bezier(.2,.7,.2,1) both; }
+.ff-d1 { animation-delay:.05s; } .ff-d2 { animation-delay:.18s; } .ff-d3 { animation-delay:.32s; } .ff-d4 { animation-delay:.46s; }
+
+/* ---------- light sweep across dark elements on hover ---------- */
+.ff-light { position: relative; overflow: hidden; }
+.ff-light::after { content: ''; position: absolute; top: 0; left: -140%; width: 55%; height: 100%; background: linear-gradient(105deg, transparent, rgba(255,255,255,0.55), transparent); transform: skewX(-16deg); pointer-events: none; z-index: 2; }
+.ff-light:hover::after { animation: ff-shine .85s ease; }
+
+/* ---------- light sweep across white CTA (dark glint) ---------- */
+.ff-cta { position: relative; overflow: hidden; transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .45s; }
+.ff-cta::after { content: ''; position: absolute; top: 0; left: -140%; width: 55%; height: 100%; background: linear-gradient(105deg, transparent, rgba(0,0,0,0.16), transparent); transform: skewX(-16deg); pointer-events: none; }
+.ff-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 46px rgba(255,255,255,0.30); }
+.ff-cta:hover::after { animation: ff-shine .85s ease; }
+
+/* ---------- animated nav underline ---------- */
+.ff-nav { position: relative; }
+.ff-nav::after { content: ''; position: absolute; left: 16px; right: 16px; bottom: 3px; height: 1px; background: #ffffff; transform: scaleX(0); transform-origin: left center; transition: transform .38s cubic-bezier(.2,.7,.2,1); }
+.ff-nav:hover::after { transform: scaleX(1); }
+.ff-nav:hover { color: #ffffff !important; }
+
+/* ---------- outline button hover ---------- */
+.ff-outline { transition: border-color .4s; }
+.ff-outline:hover { border-color: rgba(255,255,255,0.9) !important; }
+
+/* ---------- marquee color band ---------- */
+.ff-mq { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; background-image: linear-gradient(100deg, #ff7a3d, #ff2e88, #a24bff, #2ea6ff, #34e5c4, #ff7a3d); background-size: 300% 100%; animation: ff-shimmer 7s linear infinite; }
+.ff-mq-out { background-image: linear-gradient(100deg, #2ea6ff, #34e5c4, #a24bff, #ff2e88, #2ea6ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; opacity: 0.5; animation: ff-shimmer 8s linear infinite reverse; }
+
+/* ---------- generic hover-lift for cards (reused via class) ---------- */
+.ff-card { transition: transform .55s cubic-bezier(.2,.7,.2,1), border-color .45s, box-shadow .45s; }
+.ff-card:hover { transform: translateY(-8px); border-color: rgba(255,255,255,0.4); box-shadow: 0 20px 60px rgba(0,0,0,0.55), 0 0 40px rgba(255,255,255,0.06); }
+.ff-lift { transition: transform .5s cubic-bezier(.2,.7,.2,1), border-color .4s; }
+.ff-lift:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.3); }
+
+/* ---------- scoreboard cell hover ---------- */
+.ff-scorecell { transition: background .4s; }
+.ff-scorecell:hover { background: rgba(255,255,255,0.03); }
+
+/* ---------- AI feature row hover ---------- */
+.ff-airow { transition: transform .4s, border-color .4s, background .4s; }
+.ff-airow:hover { transform: translateX(6px); border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.06); }
+
+/* ---------- portal detail CTA hover ---------- */
+.ff-portalcta { transition: color .3s; }
+.ff-portalcta:hover { color: #ffffff; }
+.ff-portalcta .ff-arrow { transition: transform .3s, border-color .3s; }
+.ff-portalcta:hover .ff-arrow { transform: translateX(4px); border-color: #ffffff; }
+
+/* ---------- text inputs ---------- */
+.ff-input { width: 100%; background: transparent; border: 1px solid #333333; color: #f4f4f4; font-size: 16px; font-family: 'Hanken Grotesk', sans-serif; padding: 15px 22px; border-radius: 32px; outline: none; transition: border-color .3s; }
+.ff-input::placeholder { color: #6c6c6c; }
+.ff-input:focus { border-color: #2aa5e0; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  .ff-reveal { opacity: 1; transform: none; }
+}
