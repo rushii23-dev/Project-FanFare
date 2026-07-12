@@ -11,6 +11,11 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    ignore:
+      # Major bumps (react 19, vite 8, ...) are deliberate migrations, not
+      # routine patches — take them manually, not via auto-PR.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

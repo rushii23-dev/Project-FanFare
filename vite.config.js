@@ -55,11 +55,14 @@ export default defineConfig(({ mode }) => {
       // Split the vendor libraries out of the app chunk: react/leaflet change
       // only when we upgrade them, so returning visitors keep them cached
       // (assets are served immutable) and only re-download the app code.
+      // Function form, not the object shorthand: vite 8's Rolldown bundler
+      // only accepts the function ("manualChunks is not a function" otherwise),
+      // and vite 7's Rollup accepts both.
       rollupOptions: {
         output: {
-          manualChunks: {
-            react: ['react', 'react-dom'],
-            leaflet: ['leaflet'],
+          manualChunks(id) {
+            if (/node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return 'react'
+            if (/node_modules[\\/]leaflet[\\/]/.test(id)) return 'leaflet'
           },
         },
       },
