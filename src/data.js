@@ -142,8 +142,9 @@ export const roleMeta = { fan: 'a Fan', staff: 'Staff', organizer: 'an Organizer
 // ---- Fan profile / ticket ----
 export function createFanProfile() {
   return {
-    name: 'Jordan Rivera',
-    email: 'jordan.r@email.com',
+    // No fake persona: name/email stay empty until sign-up provides real ones.
+    name: '',
+    email: '',
     language: 'English',
     // Ticket details are entered by the fan in their dashboard (not at sign-up).
     // Until confirmed, screens fall back to sensible defaults.

@@ -11,7 +11,8 @@ const ACCENT = '#0a7d3e'
 export default function FanProfile({ fanProfile, onUpdateProfile, onLogout }) {
   const a = fanProfile.accessibility
   const activeA11y = Object.entries(a).filter(([, v]) => v).map(([k]) => k)
-  const initials = fanProfile.name.split(' ').map(w => w[0]).join('').toUpperCase()
+  const displayName = fanProfile.name || 'Fan'
+  const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase()
 
   return (
     <div>
@@ -22,8 +23,8 @@ export default function FanProfile({ fanProfile, onUpdateProfile, onLogout }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22 }}>
             <span style={{ width: 64, height: 64, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 24, background: 'linear-gradient(150deg,#0a7d3e,#0a7a3c)', boxShadow: '0 8px 20px rgba(14,159,79,0.3)' }}>{initials}</span>
             <div>
-              <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{fanProfile.name}</div>
-              <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 3 }}>{fanProfile.email}</div>
+              <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{displayName}</div>
+              <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 3 }}>{fanProfile.email || 'Create an account to save your details'}</div>
               {fanProfile.rewards.level && <span className="ff-chip ff-chip-done" style={{ marginTop: 8 }}>{fanProfile.rewards.level}</span>}
             </div>
           </div>

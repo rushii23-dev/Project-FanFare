@@ -258,7 +258,7 @@ export default function App() {
           onMarkRead={markNotifRead}
           onLogout={() => nav('login')}
           onSwitchRole={() => nav('login')}
-          userName={currentRole === 'fan' ? fanProfile.name : currentRole === 'staff' ? staffRoster[0]?.name : 'Operations Command'}
+          userName={currentRole === 'fan' ? (fanProfile.name || 'Fan') : currentRole === 'staff' ? staffRoster[0]?.name : 'Operations Command'}
         >
           {renderDashboardContent()}
         </DashboardShell>

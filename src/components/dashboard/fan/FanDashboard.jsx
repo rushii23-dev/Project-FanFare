@@ -11,8 +11,13 @@ import Sparkline from '../shared/Sparkline.jsx'
 import WeatherTile from '../shared/WeatherTile.jsx'
 import WorldCupFeed from '../shared/WorldCupFeed.jsx'
 import TicketModal from '../shared/TicketModal.jsx'
+import SimBadge from '../shared/SimBadge.jsx'
 
 const ACCENT = '#0a7d3e'
+
+// Which stand each gate feeds — part of the simulated venue model in
+// simFeed.js (and labelled as such on screen, like every sim-fed number).
+const GATE_ZONE = { A: 'N1', B: 'N2', C: 'E1', D: 'S1', E: 'W1', F: 'C1' }
 
 export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdateProfile }) {
   const venue = useVenue()
@@ -20,11 +25,18 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
   const confirmed = !!fanProfile.ticketConfirmed
   const [editTicket, setEditTicket] = useState(!confirmed)
   const [tForm, setTForm] = useState({ gate: fanProfile.gate, section: fanProfile.section, row: fanProfile.row, seat: fanProfile.seat })
+  const [tErr, setTErr] = useState('')
   const saveTicket = () => {
-    const gate = (tForm.gate || '').trim() || 'C'
-    const section = (tForm.section || '').trim() || '214'
-    const row = (tForm.row || '').trim() || '12'
-    const seat = (tForm.seat || '').trim() || '8'
+    // Nothing is invented: every field must come from the fan's real ticket.
+    const gate = (tForm.gate || '').trim().toUpperCase()
+    const section = (tForm.section || '').trim()
+    const row = (tForm.row || '').trim()
+    const seat = (tForm.seat || '').trim()
+    if (!gate || !section || !row || !seat) {
+      setTErr('Please fill in all four fields exactly as printed on your ticket.')
+      return
+    }
+    setTErr('')
     const ticketId = `FF-2026-${gate}${section}-${row}-${seat}`.toUpperCase()
     onUpdateProfile?.(p => ({ ...p, gate, section, row, seat, ticketId, ticketConfirmed: true }))
     setEditTicket(false)
@@ -32,9 +44,11 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
   const wc = useWorldCup()
   const featuredCity = wc.fixtures?.[0]?.city || wc.results?.[0]?.city || null
 
-  const myGate = gates.find(g => g.id === fanProfile.gate) || gates[0] || null
+  // Gate and zone panels show data ONLY for the fan's confirmed ticket —
+  // never a stand-in gate or a random zone.
+  const myGate = confirmed ? gates.find(g => g.id === (fanProfile.gate || '').toUpperCase()) || null : null
   const calmer = myGate ? gates.filter(g => !g.isClosed && g.id !== myGate.id).sort((a, b) => a.waitMin - b.waitMin)[0] : null
-  const myZone = zones.find(z => z.id === fanProfile.gate) || zones[0] || null
+  const myZone = myGate ? zones.find(z => z.id === GATE_ZONE[myGate.id]) || null : null
   const zonePct = myZone ? Math.round((myZone.current / myZone.capacity) * 100) : 0
 
   const quick = [
@@ -65,7 +79,7 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
             <div>
               {!confirmed && (
                 <div style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 12, lineHeight: 1.45 }}>
-                  Add your ticket so your assistant can guarantee accurate gate, seat and route guidance.
+                  Tell us your ticket details so we can help you — your gate, seat and route guidance all start from your real ticket. We never guess them.
                 </div>
               )}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
@@ -76,6 +90,7 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
                   </label>
                 ))}
               </div>
+              {tErr && <div role="alert" style={{ fontSize: 12.5, color: 'var(--c-red)', fontWeight: 600, marginTop: 10 }}>{tErr}</div>}
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <button onClick={saveTicket} className="ff-btn" style={{ flex: 1, border: 'none', color: '#fff', padding: '11px', borderRadius: 10, fontFamily: HANKEN, fontWeight: 700, fontSize: 13, letterSpacing: '0.04em', cursor: 'pointer' }}>Save ticket</button>
                 {confirmed && <button onClick={() => setEditTicket(false)} className="ff-filter-chip">Cancel</button>}
@@ -93,7 +108,8 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
           )}
         </Panel>
 
-        <Panel title="Your gate" icon="route" live={!!myGate} accent={ACCENT} className="ff-rise-card ff-st4">
+        <Panel title="Your gate" icon="route" live={!!myGate} accent={ACCENT} className="ff-rise-card ff-st4"
+          action={myGate ? <SimBadge /> : null}>
           {myGate ? (
             <>
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
@@ -111,11 +127,12 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
               )}
             </>
           ) : (
-            <DataPending icon="route" title="Gate wait times" message="Add your ticket on the Matchday tab, and your gate's live wait time will show here on matchday." />
+            <DataPending icon="route" title="Waiting for your ticket" message="Tell us your ticket details so we can help you — once your gate is saved, its live wait time and a calmer alternative appear here." />
           )}
         </Panel>
 
-        <Panel title="Your zone" icon="grid" live={!!myZone} accent={ACCENT} className="ff-rise-card ff-st5">
+        <Panel title="Your zone" icon="grid" live={!!myZone} accent={ACCENT} className="ff-rise-card ff-st5"
+          action={myZone ? <SimBadge /> : null}>
           {myZone ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
               <ProgressRing value={zonePct} size={92} color={zonePct >= 85 ? '#e4002b' : zonePct >= 65 ? '#c8890a' : ACCENT} sub="full" />
@@ -126,7 +143,7 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
               </div>
             </div>
           ) : (
-            <DataPending icon="grid" title="Crowd density" message="Add your ticket, and you'll see how busy your stand is here on matchday." />
+            <DataPending icon="grid" title="Waiting for your ticket" message="Tell us your ticket details so we can help you — we'll show how busy the stand around your gate is before you set off." />
           )}
         </Panel>
       </div>

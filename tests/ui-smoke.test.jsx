@@ -123,6 +123,25 @@ describe('role portals', () => {
     await expectDashboard(fanTabs)
   })
 
+  it('the matchday dashboard shows NO invented data before a ticket is added — it asks for ticket details instead', async () => {
+    render(<App />)
+    goLoginScreen()
+    fillCredentials()
+    fireEvent.click(screen.getByText('Continue as a Fan'))
+    await expectDashboard(fanTabs)
+
+    // The ticket form and the gate/zone panels all ask for the ticket…
+    const prompts = await screen.findAllByText(/tell us your ticket details so we can help you/i)
+    expect(prompts.length).toBeGreaterThanOrEqual(3)
+    // …and no fabricated gate wait or persona leaks through.
+    expect(screen.queryByText(/wait at Gate/)).toBeNull()
+    expect(screen.queryByText(/Jordan/)).toBeNull()
+
+    // Saving a ticket with empty fields is refused — nothing is invented.
+    fireEvent.click(screen.getByText('Save ticket'))
+    expect(screen.getByText('Please fill in all four fields exactly as printed on your ticket.')).toBeTruthy()
+  })
+
   it('staff login lands on the staff dashboard with every staff tab present', async () => {
     render(<App />)
     goLoginScreen()
