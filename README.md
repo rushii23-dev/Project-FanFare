@@ -13,6 +13,7 @@ staff speak 8 languages, and organizers make the right call — in real time.*
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Google_Gemini-2.5-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 </div>
 
@@ -119,9 +120,6 @@ npm run preview    # preview that build locally
 
 ---
 
-
----
-
 ## 🧱 How it's built
 
 **React 18** + **Vite** on the front. **Google Gemini 2.5 Flash** for the AI, behind a serverless proxy. **Leaflet** for maps. No backend, no database — state lives in React and `localStorage`.
@@ -147,6 +145,13 @@ npm run preview    # preview that build locally
             ├── staff/     interpreter · incidents · tasks · zones
             └── organizer/ copilot · briefings · analytics · heatmap · sustainability
 ```
+
+---
+
+## 📄 License
+
+Released under the **[MIT License](LICENSE)** — you're free to use, modify and
+distribute this code, commercially or otherwise. Just keep the copyright notice.
 
 ---
 

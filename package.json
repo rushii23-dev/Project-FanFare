@@ -2,6 +2,7 @@
   "name": "fanfare",
   "private": true,
   "version": "1.0.0",
+  "license": "MIT",
   "description": "FanFare — AI matchday companion for the FIFA World Cup 2026. GenAI assistance for fans, staff and organizers, grounded in live venue data.",
   "type": "module",
   "scripts": {
