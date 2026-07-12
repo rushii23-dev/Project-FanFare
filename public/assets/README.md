@@ -1,16 +1,14 @@
 # Assets
 
-Drop your media here — the app references them by these exact filenames and
-degrades gracefully (animated pitch / CSS ball) when they're missing.
+Media served from the site root — `public/assets/hero-stadium.jpg` is reachable
+at `/assets/hero-stadium.jpg`.
 
-| File                  | Used by            | Notes                                          |
-| --------------------- | ------------------ | ---------------------------------------------- |
-| `goal.mp4`            | Hero               | Looping clip. The "ball hits the net" shake fires at ~1.1s — tune `STRIKE` in `src/components/landing/Hero.jsx` to match your clip. |
-| `fifa-ball-2026.png`  | Impact teaser      | Square image, shown in a 96px circle.          |
+| File                 | Used by                    | Notes                                                     |
+| -------------------- | -------------------------- | --------------------------------------------------------- |
+| `hero-stadium.jpg`   | Landing hero               | Background still. The hero tries several extensions (`.jpg` / `.jpeg` / `.png` / `.webp`) and falls back to an animated CSS pitch if none resolve. |
+| `fifa-trophy.png`    | Landing hero              | Trophy motif.                                              |
+| `fifa-ball-2026.png` | Impact teaser, marquee     | Square image, shown in a 96px circle.                      |
 
-These come from the original FanFare Claude Design project
-(`goal.mp4`, `uploads/fifa-ball-2026.png`). They were too large / gated to pull
-through the design tool automatically, so copy them in manually.
-
-Anything in `public/` is served from the site root, so `public/assets/goal.mp4`
-is reachable at `/assets/goal.mp4`.
+Every asset is optional. The app degrades gracefully — an animated pitch stands
+in for the hero, and a CSS ball for the match ball — so it runs fine on a fresh
+clone with this folder empty.

@@ -2,7 +2,7 @@
   "name": "fanfare",
   "private": true,
   "version": "1.0.0",
-  "description": "FanFare — stadium event portal for the 2026 World Cup. Ported from the FanFare.dc.html Claude Design.",
+  "description": "FanFare — AI matchday companion for the FIFA World Cup 2026. GenAI assistance for fans, staff and organizers, grounded in live venue data.",
   "type": "module",
   "scripts": {
     "dev": "vite",
