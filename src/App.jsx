@@ -170,7 +170,6 @@ export default function App() {
   const renderDashboardContent = () => {
     const dashNav = (s) => nav(s)
     const goLogin = () => nav('login')
-    const goLanding = () => nav('landing')
 
     // ── Fan views ──
     if (screen === 'fan-dashboard') return <FanDashboard nav={dashNav} fanProfile={fanProfile} zones={zones} gates={gates} onUpdateProfile={setFanProfile} />
@@ -207,28 +206,35 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: isDashboard ? '#070707' : '#ffffff', overflowX: 'hidden' }}>
+      {/* Keyboard and screen-reader users jump straight past the nav */}
+      <a href="#ff-main-content" className="ff-skip-link">Skip to main content</a>
+
       {/* Landing / About / Login get the marketing Nav */}
       {!isDashboard && <Nav handlers={handlers} />}
 
       {/* Scroll-driven Trionda ball on the long marketing pages */}
       {(screen === 'landing' || screen === 'about') && <ScrollBall />}
 
-      {screen === 'landing' && (
-        <Landing
-          handlers={handlers}
-          activePortal={activePortal}
-          setActivePortal={setActivePortal}
-        />
-      )}
+      {!isDashboard && (
+        <main id="ff-main-content">
+          {screen === 'landing' && (
+            <Landing
+              handlers={handlers}
+              activePortal={activePortal}
+              setActivePortal={setActivePortal}
+            />
+          )}
 
-      {screen === 'about' && <About handlers={handlers} />}
+          {screen === 'about' && <About handlers={handlers} />}
 
-      {screen === 'login' && (
-        <Login handlers={handlers} role={role} setRole={setRole} />
-      )}
+          {screen === 'login' && (
+            <Login handlers={handlers} role={role} setRole={setRole} />
+          )}
 
-      {screen === 'register' && (
-        <CreateAccount handlers={handlers} role={role} setRole={setRole} />
+          {screen === 'register' && (
+            <CreateAccount handlers={handlers} role={role} setRole={setRole} />
+          )}
+        </main>
       )}
 
       {/* Dashboard screens get the DashboardShell */}

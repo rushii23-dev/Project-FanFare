@@ -121,6 +121,26 @@ async function readJsonBody(req) {
   return raw ? JSON.parse(raw) : {}
 }
 
+// Per-IP sliding-window rate limit. In-memory, so it is per warm lambda
+// instance, not global — Vercel KV would make it exact, but even per-instance
+// it stops the cheap attack (one client hammering /api/ai to drain the Gemini
+// quota), and legitimate matchday usage never comes close to the ceiling.
+const RATE_LIMIT = 20        // requests
+const RATE_WINDOW_MS = 60000 // per minute, per IP
+const hits = new Map()
+
+function rateLimited(ip) {
+  const now = Date.now()
+  const windowStart = now - RATE_WINDOW_MS
+  const times = (hits.get(ip) || []).filter(t => t > windowStart)
+  if (times.length >= RATE_LIMIT) { hits.set(ip, times); return true }
+  times.push(now)
+  hits.set(ip, times)
+  // Cap the map so a rotating-IP flood can't grow memory unbounded.
+  if (hits.size > 5000) hits.clear()
+  return false
+}
+
 export default async function handler(req, res) {
   // GET is a health probe so the UI can show an honest "AI offline" state
   // instead of pretending the assistant works.
@@ -130,6 +150,12 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' })
+    return
+  }
+
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown'
+  if (rateLimited(ip)) {
+    res.status(429).json({ error: 'Too many requests', code: 'RATE_LIMIT' })
     return
   }
 

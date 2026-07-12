@@ -111,7 +111,7 @@ export default function DashboardShell({
       </nav>
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="ff-main" key={screen}>
+      <main id="ff-main-content" className="ff-main" key={screen}>
         <LiveScoreBar />
         {children}
       </main>

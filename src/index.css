@@ -3,6 +3,24 @@
    Keyframes + utility classes ported from FanFare.dc.html
    ============================================================ */
 
+/* Skip link: invisible until a keyboard user tabs to it, then front and centre */
+.ff-skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 10000;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: #061a0f;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.ff-skip-link:focus {
+  top: 16px;
+}
+
 :root {
   --ff-glow: 0.7; /* "Light" intensity — was an editor prop in the design */
 

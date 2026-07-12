@@ -69,16 +69,18 @@ export function LightMotes({ count = 22, zIndex = 1, color = '#ffffff' }) {
   )
 }
 
-// Confetti fall in host-nation colours (bright).
+// Confetti fall in host-nation colours (bright). The palette lives at module
+// scope so it is referentially stable and the memo below never re-randomises.
+const CONFETTI_COLORS = [FIFA.pitch, FIFA.lime, FIFA.gold, FIFA.red, FIFA.blue, '#ffffff']
+
 export function Confetti({ count = 22, zIndex = 2 }) {
-  const colors = [FIFA.pitch, FIFA.lime, FIFA.gold, FIFA.red, FIFA.blue, '#ffffff']
   const bits = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({
         left: Math.random() * 100,
         w: 5 + Math.random() * 5,
         h: 9 + Math.random() * 9,
-        color: colors[i % colors.length],
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
         delay: Math.random() * 8,
         dur: 6 + Math.random() * 6,
         round: Math.random() > 0.6,

@@ -38,5 +38,18 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), aiDevApi(env)],
     server: { open: true },
+    build: {
+      // Split the vendor libraries out of the app chunk: react/leaflet change
+      // only when we upgrade them, so returning visitors keep them cached
+      // (assets are served immutable) and only re-download the app code.
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom'],
+            leaflet: ['leaflet'],
+          },
+        },
+      },
+    },
   }
 })

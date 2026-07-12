@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { BRICOLAGE, HANKEN } from '../../ui.js'
 import Icon from '../../landing/Icons.jsx'
 import { useRates, useLiveWorldCup, geocodeCity, useWeather, weatherMeta } from '../../../lib/freeApis.js'
@@ -52,7 +52,11 @@ export default function FanTransport({ fanProfile, gates = [] }) {
   const ai = useAIStatus()
   const venue = useVenue()
   // The destination IS the real venue of the live match — no stand-in stadium.
-  const dest = { lat: venue.lat, lon: venue.lon, name: venue.venue, city: venue.city }
+  // Memoised so getAdvice below doesn't see a new object every render.
+  const dest = useMemo(
+    () => ({ lat: venue.lat, lon: venue.lon, name: venue.venue, city: venue.city }),
+    [venue.lat, venue.lon, venue.venue, venue.city],
+  )
 
   // ── Where the fan is travelling from. Real geocoding → real distance → real emissions.
   const [originText, setOriginText] = useState('')
@@ -75,7 +79,7 @@ export default function FanTransport({ fanProfile, gates = [] }) {
   }
 
   const km = origin ? distanceKm(origin, { lat: dest.lat, lon: dest.lon }) : 0
-  const ranked = km > 0 ? rankModes(km) : []
+  const ranked = useMemo(() => (km > 0 ? rankModes(km) : []), [km])
   const greenest = ranked[0]
 
   const getAdvice = useCallback(async () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BRICOLAGE, HANKEN, section } from '../ui.js'
+import { BRICOLAGE, HANKEN } from '../ui.js'
 import Icon from './Icons.jsx'
 import { LightMotes } from './Fx.jsx'
 
