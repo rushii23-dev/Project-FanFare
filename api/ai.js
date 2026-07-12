@@ -24,6 +24,10 @@ const MAX_PROMPT_CHARS = 12000
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
+// Belt and braces: an upstream error message should never contain the key, but
+// it is never allowed to reach a browser if it somehow does.
+const scrub = (text, key) => (key ? text.split(key).join('***') : text)
+
 export async function runAI({ system, prompt, json = false, temperature = 0.4 }) {
   const key = process.env.GEMINI_API_KEY
   if (!key) {
@@ -93,9 +97,16 @@ export async function runAI({ system, prompt, json = false, temperature = 0.4 })
       continue
     }
 
-    // Surface the status but never echo the upstream body — it can contain the key.
-    last = Object.assign(new Error(`Gemini request failed (${r.status})`), {
-      code: r.status === 429 ? 'RATE_LIMIT' : r.status === 401 || r.status === 403 ? 'AUTH' : 'UPSTREAM',
+    // Surface WHY it failed, but never echo the key back. Gemini reports an
+    // invalid key as 400 INVALID_ARGUMENT — not 401 — so without the upstream
+    // reason a bad key is indistinguishable from a malformed request, which
+    // makes a misconfigured deployment almost impossible to diagnose.
+    const detail = await r.json().catch(() => null)
+    const reason = detail?.error?.message || ''
+    const badKey = r.status === 401 || r.status === 403 || /api key/i.test(reason)
+
+    last = Object.assign(new Error(`Gemini request failed (${r.status})${reason ? `: ${scrub(reason, key)}` : ''}`), {
+      code: r.status === 429 ? 'RATE_LIMIT' : badKey ? 'AUTH' : 'UPSTREAM',
     })
     if (!RETRYABLE.has(r.status)) throw last
   }
