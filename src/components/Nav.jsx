@@ -3,7 +3,7 @@ const BRICOLAGE = "'Bricolage Grotesque', sans-serif"
 const HANKEN = "'Hanken Grotesk', sans-serif"
 
 export default function Nav({ handlers }) {
-  const { goHome, goHow, goPortals, goAbout, goLogin } = handlers
+  const { goHome, goHow, goPortals, goAbout, goLogin, goRegister } = handlers
 
   // Transparent (white text) over the hero photo; light glass with ink text
   // once you scroll onto the bright sections below.
@@ -74,7 +74,7 @@ export default function Nav({ handlers }) {
         </a>
         <a
           href="#"
-          onClick={goLogin}
+          onClick={goRegister}
           className="ff-btn"
           style={{
             fontFamily: HANKEN, fontWeight: 700, fontSize: 13.5, letterSpacing: '0.08em',

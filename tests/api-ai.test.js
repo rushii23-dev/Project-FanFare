@@ -182,4 +182,26 @@ describe('handler — HTTP contract', () => {
     await handler(post('10.8.8.8'), res)
     expect(res.statusCode).toBe(200)
   })
+
+  it('a blocked IP STAYS blocked while thousands of rotating IPs flood the endpoint', async () => {
+    fetch.mockResolvedValue(geminiOk('ok'))
+    const blocked = '10.7.7.7'
+    for (let i = 0; i < 20; i++) await handler(post(blocked), makeRes())
+
+    // A rotating-IP flood pushes the tracker past its memory cap. Eviction
+    // must reclaim memory from under-limit entries only — never by resetting
+    // the counter of an IP that has already hit the limit.
+    for (let i = 0; i < 5200; i++) {
+      await handler(post(`203.0.${(i / 250) | 0}.${i % 250}`), makeRes())
+    }
+
+    const res = makeRes()
+    await handler(post(blocked), res)
+    expect(res.statusCode).toBe(429)
+
+    // …and a legitimate new visitor still gets through after the purge.
+    const fresh = makeRes()
+    await handler(post('198.51.100.1'), fresh)
+    expect(fresh.statusCode).toBe(200)
+  })
 })

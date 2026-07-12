@@ -13,7 +13,7 @@ const HERO_CANDIDATES = [
 ]
 
 export default function Hero({ handlers }) {
-  const { goLogin, goHow } = handlers
+  const { goRegister, goHow } = handlers
   // Probe the candidate filenames; use the first that actually loads.
   const [heroImg, setHeroImg] = useState(null)
   useEffect(() => {
@@ -152,7 +152,7 @@ export default function Hero({ handlers }) {
         >
           <a
             href="#"
-            onClick={goLogin}
+            onClick={goRegister}
             className="ff-btn"
             style={{
               fontFamily: HANKEN, fontWeight: 700, fontSize: 15, letterSpacing: '0.08em',

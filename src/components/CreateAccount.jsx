@@ -1,8 +1,11 @@
+
+
+
 import { useState } from 'react'
 import { BRICOLAGE, HANKEN, FIFA_TRIAD } from './ui.js'
 import { BrandMark } from './Nav.jsx'
 import AuthShell from './AuthShell.jsx'
-import { roleDefs, roleMeta } from '../data.js'
+import { roleDefs, roleMeta, roleAccent } from '../data.js'
 
 export default function CreateAccount({ handlers, role, setRole }) {
   const roleIdx = roleDefs.findIndex((r) => r.id === role)
@@ -16,7 +19,10 @@ export default function CreateAccount({ handlers, role, setRole }) {
   const submit = (e) => {
     e.preventDefault()
     if (!name.trim()) { setErr('Please enter your name to continue.'); return }
-    // Ticket details are collected later, inside the fan dashboard — not at sign-up.
+    if (!/\S+@\S+\.\S+/.test(email.trim())) { setErr('Please enter a valid email address.'); return }
+    if (!password) { setErr('Please create a password.'); return }
+    // Ticket details are collected later, inside the fan dashboard — not at
+    // sign-up. The password gates entry only; it is never stored anywhere.
     handlers.completeAuth(role, { name: name.trim(), email: email.trim() })
   }
 
@@ -38,7 +44,7 @@ export default function CreateAccount({ handlers, role, setRole }) {
             const t = FIFA_TRIAD[i % 3]
             return (
               <button type="button" key={rd.id} className="ff-press" onClick={() => setRole(rd.id)}
-                style={{ border: 'none', cursor: 'pointer', fontFamily: HANKEN, fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '11px 0', borderRadius: 28, background: active ? t.c : 'transparent', color: active ? '#ffffff' : '#5a7565', boxShadow: active ? `0 6px 18px ${t.glow}` : 'none' }}>
+                style={{ border: 'none', cursor: 'pointer', fontFamily: HANKEN, fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '11px 0', borderRadius: 28, background: active ? roleAccent[rd.id] : 'transparent', color: active ? '#ffffff' : '#5a7565', boxShadow: active ? `0 6px 18px ${t.glow}` : 'none' }}>
                 {rd.label}
               </button>
             )

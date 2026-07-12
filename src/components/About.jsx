@@ -176,7 +176,7 @@ export default function About({ handlers }) {
             Ready to walk into the ground?
           </h2>
           <div style={{ position: 'relative', marginTop: 32, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="#" onClick={handlers.goLogin} className="ff-btn" style={{
+            <a href="#" onClick={handlers.goRegister} className="ff-btn" style={{
               padding: '17px 34px', borderRadius: 40, fontFamily: HANKEN, fontWeight: 700, fontSize: 15,
               letterSpacing: '0.08em', textTransform: 'uppercase', color: '#ffffff', textShadow: '0 1px 8px rgba(0,0,0,0.3)',
             }}>

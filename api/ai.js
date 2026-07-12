@@ -127,6 +127,7 @@ async function readJsonBody(req) {
 // quota), and legitimate matchday usage never comes close to the ceiling.
 const RATE_LIMIT = 20        // requests
 const RATE_WINDOW_MS = 60000 // per minute, per IP
+const MAX_TRACKED_IPS = 5000 // memory bound under a rotating-IP flood
 const hits = new Map()
 
 function rateLimited(ip) {
@@ -136,8 +137,23 @@ function rateLimited(ip) {
   if (times.length >= RATE_LIMIT) { hits.set(ip, times); return true }
   times.push(now)
   hits.set(ip, times)
-  // Cap the map so a rotating-IP flood can't grow memory unbounded.
-  if (hits.size > 5000) hits.clear()
+
+  // Bound the map without ever unblocking anyone: first drop IPs whose window
+  // has fully expired, then — if a flood is still holding the map over the
+  // cap — evict the oldest UNDER-limit entries. An IP that is currently rate
+  // limited is never evicted, so a rotating-IP flood cannot reset it.
+  if (hits.size > MAX_TRACKED_IPS) {
+    for (const [k, v] of hits) {
+      if (k === ip) continue
+      const fresh = v.filter(t => t > windowStart)
+      if (fresh.length === 0) hits.delete(k)
+      else hits.set(k, fresh)
+    }
+    for (const [k, v] of hits) {
+      if (hits.size <= MAX_TRACKED_IPS) break
+      if (k !== ip && v.length < RATE_LIMIT) hits.delete(k)
+    }
+  }
   return false
 }
 

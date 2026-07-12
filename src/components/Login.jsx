@@ -1,11 +1,32 @@
+import { useState } from 'react'
 import { BRICOLAGE, HANKEN, FIFA_TRIAD } from './ui.js'
 import { BrandMark } from './Nav.jsx'
 import AuthShell from './AuthShell.jsx'
-import { roleDefs, roleMeta } from '../data.js'
+import { roleDefs, roleMeta, roleAccent } from '../data.js'
 
 export default function Login({ handlers, role, setRole }) {
   const roleIdx = roleDefs.findIndex((r) => r.id === role)
   const activeT = FIFA_TRIAD[(roleIdx < 0 ? 0 : roleIdx) % 3]
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [err, setErr] = useState('')
+
+  // Demo auth: there is no backend to verify against, but the door still
+  // requires credentials — you cannot enter a portal with empty fields.
+  // The password is used only for this check and is never stored anywhere.
+  const submit = (e) => {
+    e.preventDefault()
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email.trim())) {
+      setErr('Please enter a valid email address.')
+      return
+    }
+    if (!password) {
+      setErr('Please enter your password.')
+      return
+    }
+    handlers.goDashboard(role)
+  }
 
   return (
     <AuthShell>
@@ -39,7 +60,7 @@ export default function Login({ handlers, role, setRole }) {
               style={{
                 border: 'none', cursor: 'pointer', fontFamily: HANKEN, fontSize: 13, fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase', padding: '11px 0', borderRadius: 28,
-                background: active ? t.c : 'transparent',
+                background: active ? roleAccent[rd.id] : 'transparent',
                 color: active ? '#ffffff' : '#5a7565',
                 boxShadow: active ? `0 6px 18px ${t.glow}` : 'none',
               }}
@@ -50,21 +71,28 @@ export default function Login({ handlers, role, setRole }) {
         })}
       </div>
 
-      <form style={{ display: 'flex', flexDirection: 'column', gap: 14 }} onSubmit={(e) => e.preventDefault()}>
-        <input type="email" placeholder="Email address" className="ff-login-input ff-fieldin ff-fi3" />
-        <input type="password" placeholder="Password" className="ff-login-input ff-fieldin ff-fi4" />
-        <a
-          href="#"
-          onClick={(e) => { e.preventDefault(); handlers.goDashboard(role) }}
+      <form style={{ display: 'flex', flexDirection: 'column', gap: 14 }} onSubmit={submit}>
+        <input
+          type="email" placeholder="Email address" className="ff-login-input ff-fieldin ff-fi3"
+          value={email} onChange={(e) => { setEmail(e.target.value); setErr('') }}
+        />
+        <input
+          type="password" placeholder="Password" className="ff-login-input ff-fieldin ff-fi4"
+          value={password} onChange={(e) => { setPassword(e.target.value); setErr('') }}
+        />
+        {err && <div role="alert" style={{ fontSize: 13, color: '#c30026', fontWeight: 600 }}>{err}</div>}
+        <button
+          type="submit"
           className="ff-btn ff-fieldin ff-fi5"
           style={{
             textAlign: 'center', fontFamily: HANKEN, fontWeight: 700, fontSize: 15,
             letterSpacing: '0.08em', textTransform: 'uppercase', color: '#ffffff',
             padding: '16px 22px', borderRadius: 32, marginTop: 6, textShadow: '0 1px 6px rgba(0,0,0,0.3)',
+            border: 'none', cursor: 'pointer',
           }}
         >
           Continue as {roleMeta[role] || 'a Fan'}
-        </a>
+        </button>
       </form>
 
       <p className="ff-fieldin ff-fi6" style={{ textAlign: 'center', fontSize: 14, color: '#4a6555', marginTop: 22 }}>

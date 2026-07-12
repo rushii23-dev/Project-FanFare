@@ -10,7 +10,7 @@ staff speak 8 languages, and organizers make the right call — in real time.*
 <br>
 
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Google_Gemini-2.5-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
@@ -116,7 +116,8 @@ Open the printed `localhost` URL. That's it.
 ```bash
 npm run build      # production build → dist/
 npm run preview    # preview that build locally
-npm test           # run the test suite (43 tests)
+npm test           # run the test suite (56 tests)
+npm run test:a11y  # WCAG 2.1 A/AA axe audit of every core screen (build first)
 npm run lint       # ESLint over the whole codebase
 ```
 
@@ -128,7 +129,8 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 
 | Check | Command | Result |
 |---|---|---|
-| Tests | `npm test` | **43 tests, 3 suites, all passing** |
+| Tests | `npm test` | **56 tests, 4 suites, all passing** |
+| Accessibility | `npm run build && npm run test:a11y` | **WCAG 2.1 A/AA, zero axe violations on every core screen** — enforced in CI, in a real browser |
 | Lint | `npm run lint` | **0 errors** (react-hooks correctness rules run as errors) |
 | Dependency vulnerabilities | `npm audit` | **0 vulnerabilities** |
 | Secret in the client bundle | `grep -r "your key" dist/` | **absent** — the key never leaves the server |
@@ -137,13 +139,20 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 - **Carbon arithmetic** — DEFRA factors applied to great-circle distance, checked against an independently known real-world distance
 - **Simulator invariants** — zones can never exceed capacity, closed gates always read zero, the mode split always sums to 1, held over 500 simulated ticks
 - **The AI proxy's failure ladder** — retry on transient errors, step-down to the fallback model, truncated-response rejection, invalid-key mapping, and proof that the API key is scrubbed from every error message it could ever appear in
+- **The real UI, end to end** — the actual `<App/>` is mounted and driven through every user journey: landing → sign-up → login → each of the three role dashboards, with every tab present; login and sign-up provably refuse entry without credentials; the password provably never touches persistent storage; a render crash provably lands in the recovery screen instead of a white page
+- **Rate-limiter integrity under attack** — a blocked IP stays blocked while 5,000+ rotating IPs flood the endpoint; eviction reclaims memory only from under-limit entries
 
 **Security posture:**
 - API key is server-side only; the browser bundle provably never contains it
-- Strict Content-Security-Policy — every external endpoint the app talks to is explicitly allowlisted; everything else is blocked
-- Standard hardening headers (HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy)
-- Per-IP rate limiting on the AI endpoint, so a hostile client can't drain the quota
+- Strict Content-Security-Policy — every external endpoint the app talks to is explicitly allowlisted, **including images** (map tiles and team crests are pinned to their exact hosts; no blanket `https:`); everything else is blocked
+- Standard hardening headers (HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy) plus cross-origin isolation headers (COOP, CORP, X-Permitted-Cross-Domain-Policies)
+- Per-IP rate limiting on the AI endpoint, so a hostile client can't drain the quota — with flood-proof eviction: a rotating-IP attack can exhaust neither memory nor reset an already-blocked IP
 - Prompt size capped server-side; upstream error bodies are never echoed to the client unscrubbed
+- Credentials gate every portal: login and sign-up require email and password, and the password is used only for that check — it is **never stored**, not even in `localStorage` (a test proves it)
+
+**Accessibility:**
+- WCAG 2.1 A/AA enforced by an automated axe-core gate (`npm run test:a11y`) that drives a real browser through all six core screens on every CI run — a style tweak that regresses contrast or ARIA fails the build instead of shipping
+- Skip-to-content link, labelled landmarks, `aria-label`s on icon-only controls, reduced-motion support
 
 **Performance:**
 - Code-split bundles: react (45 KB gzip) and leaflet (43 KB gzip) ship as separate immutable-cached chunks — returning visitors re-download only the 71 KB app chunk
