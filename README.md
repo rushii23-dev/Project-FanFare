@@ -119,18 +119,6 @@ npm run preview    # preview that build locally
 
 ---
 
-## ☁️ Deploying to Vercel
-
-1. Import this repo at [vercel.com/new](https://vercel.com/new) — the framework auto-detects as **Vite**.
-2. Add **one** environment variable:
-
-   | Name | Value |
-   |---|---|
-   | `GEMINI_API_KEY` | your Gemini key |
-
-3. Deploy.
-
-> ⚠️ **Do not** name it `VITE_GEMINI_API_KEY`. The `VITE_` prefix would ship your secret key to every visitor's browser. FanFare deliberately routes all AI calls through a serverless function ([`api/ai.js`](api/ai.js)) so **the key never leaves the server**.
 
 ---
 
