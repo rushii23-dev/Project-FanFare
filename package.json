@@ -29,7 +29,7 @@
     "@testing-library/react": "^16.3.2",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
-    "@vitejs/plugin-react": "^5.2.0",
+    "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.10",
     "axe-core": "^4.12.1",
     "eslint": "^10.7.0",
@@ -37,9 +37,9 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.7.0",
     "jsdom": "^29.1.1",
-    "playwright-core": "1.49",
+    "playwright-core": "1.61",
     "typescript": "^7.0.2",
-    "vite": "^7.3.6",
+    "vite": "^8.1.4",
     "vitest": "^4.1.10"
   }
 }
