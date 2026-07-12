@@ -1,175 +1,98 @@
 import { useState } from 'react'
-import { BRICOLAGE, HANKEN } from '../../ui.js'
-import { C } from '../../../data.js'
+import { BRICOLAGE } from '../../ui.js'
+import Icon from '../../landing/Icons.jsx'
+import { useVenue } from '../../../lib/venue.js'
+import PageHead from '../shared/PageHead.jsx'
+import Panel from '../shared/Panel.jsx'
+import DataPending from '../shared/DataPending.jsx'
 import StadiumMap from '../shared/StadiumMap.jsx'
+import VenueMap from '../shared/VenueMap.jsx'
+import Sparkline from '../shared/Sparkline.jsx'
 
-// Live Map & Seat Finder — stadium map with gate/seat search
-export default function FanMap({ nav, zones, gates, fanProfile }) {
-  const [search, setSearch] = useState('')
-  const [found, setFound] = useState(null)
-  const [highlightGate, setHighlightGate] = useState(fanProfile.gate)
+const ACCENT = '#0e9f4f'
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    const q = search.trim().toUpperCase()
-    if (!q) return
-    // Try to match a section/row/seat pattern
-    const secMatch = q.match(/(\d+)/)
-    if (secMatch) {
-      setFound({
-        section: secMatch[1],
-        message: `Section ${secMatch[1]} is in the ${parseInt(secMatch[1]) > 200 ? 'upper' : 'lower'} bowl, ${parseInt(secMatch[1]) > 200 ? 'South Stand (Zone C)' : 'North Stand (Zone A)'}.`,
-      })
-    } else {
-      setFound({ section: null, message: `No results found for "${search}". Try a section number.` })
-    }
-  }
+export default function FanMap({ zones, gates, fanProfile }) {
+  const venue = useVenue()
+  const [view, setView] = useState('stadium')
+  const [sel, setSel] = useState(fanProfile.gate)
+  const selGate = gates.find(g => g.id === sel)
 
-  // Find the calmer gate
-  const openGates = gates.filter(g => !g.isClosed)
-  const calmerGate = [...openGates].sort((a, b) => a.waitMin - b.waitMin)[0]
+  // Only the real stadium goes on the map. The old markers ("Secaucus Junction",
+  // "Lot D", "Rideshare drop-off — South Plaza") were invented MetLife
+  // coordinates and are gone; we do not know the transport nodes for an
+  // arbitrary World Cup ground and will not pretend to.
+  const cityMarkers = venue.resolved
+    ? [{ lat: venue.lat, lon: venue.lon, label: venue.venue, color: '#0e9f4f' }]
+    : []
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
-      <button className="ff-breadcrumb" onClick={() => nav('fan-dashboard')}>
-        ← Dashboard
-      </button>
-
-      <h2 style={{
-        fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 28,
-        color: '#f4f4f4', textTransform: 'uppercase', marginBottom: 8,
-      }}>
-        Live Map & Seat Finder
-      </h2>
-      <p style={{ fontSize: 14, color: '#9a9a9a', marginBottom: 24 }}>
-        Find your seat, check gate status, and discover calmer routes.
-      </p>
-
-      {/* Calmer route banner */}
-      {calmerGate && calmerGate.waitMin < 5 && (
-        <div style={{
-          padding: '14px 20px', borderRadius: 12, marginBottom: 20,
-          background: 'rgba(47,162,78,0.08)', border: '1px solid rgba(47,162,78,0.2)',
-          display: 'flex', alignItems: 'center', gap: 12,
-        }}>
-          <span style={{ fontSize: 20 }}>🟢</span>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#2fa24e' }}>Calmer route available</div>
-            <div style={{ fontSize: 13, color: '#9a9a9a' }}>
-              Gate {calmerGate.id} has a {calmerGate.waitMin}-minute wait — much shorter than your assigned Gate {fanProfile.gate}.
-            </div>
+    <div>
+      <PageHead
+        eyebrow="Live Map"
+        title="Find your way"
+        subtitle="Your seat, gate flow and the fastest way in — updated live."
+        action={(
+          <div style={{ display: 'inline-flex', gap: 8 }}>
+            <button className={`ff-filter-chip${view === 'stadium' ? ' active' : ''}`} onClick={() => setView('stadium')}>Stadium</button>
+            <button className={`ff-filter-chip${view === 'city' ? ' active' : ''}`} onClick={() => setView('city')}>City</button>
           </div>
-          <button
-            onClick={() => setHighlightGate(calmerGate.id)}
-            style={{
-              marginLeft: 'auto', padding: '8px 16px', borderRadius: 20,
-              border: '1px solid rgba(47,162,78,0.3)', background: 'transparent',
-              color: '#2fa24e', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-              fontFamily: HANKEN, textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}
-          >
-            Show on map
-          </button>
-        </div>
-      )}
+        )}
+      />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
-        {/* Map */}
-        <div className="ff-dash-card" style={{ padding: 24 }}>
-          <StadiumMap
-            zones={zones}
-            gates={gates}
-            highlightGate={highlightGate}
-            accent={C.blue}
-            onGateClick={(id) => setHighlightGate(id)}
-          />
-          <div style={{ marginTop: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            <Legend color="#2fa24e" label="< 5 min wait" />
-            <Legend color="#ffa500" label="5–10 min" />
-            <Legend color="#e23a45" label="> 10 min" />
-          </div>
-        </div>
-
-        {/* Search & gate list */}
-        <div>
-          <form onSubmit={handleSearch} style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <input
-                className="ff-input"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search by section (e.g. 214)"
-                style={{ flex: 1 }}
-              />
-              <button
-                type="submit"
-                style={{
-                  padding: '12px 20px', borderRadius: 32, border: 'none',
-                  background: C.blue, color: '#fff', fontWeight: 600,
-                  fontSize: 13, cursor: 'pointer', fontFamily: HANKEN,
-                }}
-              >
-                Find
-              </button>
-            </div>
-          </form>
-
-          {found && (
-            <div className="ff-dash-card" style={{ marginBottom: 16, padding: 18 }}>
-              <div style={{ fontSize: 14, color: found.section ? '#cfcfcf' : '#9a9a9a' }}>
-                {found.section && <span style={{ marginRight: 8 }}>📍</span>}
-                {found.message}
-              </div>
-            </div>
+      <div className="ff-fan-map" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 18, alignItems: 'start' }}>
+        <Panel title={view === 'stadium' ? 'Stadium bowl' : 'Getting to the venue'} icon="map" live={view === 'stadium' && zones.length > 0} accent={ACCENT} className="ff-rise-card ff-st1">
+          {view === 'stadium' ? (
+            zones.length > 0 ? (
+              <>
+                <StadiumMap zones={zones} gates={gates} accent={ACCENT} highlightGate={sel} onGateClick={setSel} />
+                <div style={{ display: 'flex', gap: 18, justifyContent: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+                  {[['Calm', '#0e9f4f'], ['Busy', '#c8890a'], ['Packed', '#e4002b']].map(([l, c]) => (
+                    <span key={l} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12.5, color: 'var(--muted)' }}>
+                      <span style={{ width: 11, height: 11, borderRadius: 4, background: c }} /> {l}
+                    </span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <DataPending icon="grid" title="Live bowl heatmap" message="The colour-coded stadium map fills in on matchday, showing how busy each stand and gate is. Switch to City view for the live map to the ground." style={{ padding: '60px 24px' }} />
+            )
+          ) : (
+            venue.resolved ? (
+              <VenueMap center={[venue.lat, venue.lon]} zoom={13} markers={cityMarkers} height={380} />
+            ) : (
+              <DataPending icon="pin" title="Resolving the venue" message="Finding which stadium the live FIFA World Cup 2026 match is at. The map opens on the real ground — we never show a stand-in venue." style={{ padding: '60px 24px' }} />
+            )
           )}
+        </Panel>
 
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6c6c6c', marginBottom: 12 }}>
-            Gate Status
-          </div>
-          {gates.map(g => (
-            <button
-              key={g.id}
-              onClick={() => setHighlightGate(g.id)}
-              className="ff-dash-card"
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 14,
-                padding: '14px 18px', marginBottom: 8, cursor: 'pointer',
-                textAlign: 'left', borderColor: highlightGate === g.id ? `${C.blue}55` : undefined,
-              }}
-            >
-              <span style={{
-                width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
-                background: g.isClosed ? '#6c6c6c' : g.density >= 85 ? '#e23a45' : g.density >= 65 ? '#ffa500' : '#2fa24e',
-                boxShadow: g.isClosed ? 'none' : `0 0 6px ${g.density >= 85 ? 'rgba(226,58,69,0.5)' : g.density >= 65 ? 'rgba(255,165,0,0.5)' : 'rgba(47,162,78,0.5)'}`,
-              }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#f4f4f4' }}>
-                  Gate {g.id} {g.isClosed ? '(Closed)' : ''}
-                  {g.id === fanProfile.gate && <span style={{ color: C.blue, fontSize: 11, marginLeft: 8 }}>YOUR GATE</span>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <Panel title="Your seat" icon="seat" accent={ACCENT} className="ff-rise-card ff-st2">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 12px' }}>
+              {[['Gate', fanProfile.gate], ['Section', fanProfile.section], ['Row', fanProfile.row], ['Seat', fanProfile.seat]].map(([k, v]) => (
+                <div key={k}>
+                  <div style={{ fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 3 }}>{k}</div>
+                  <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{v}</div>
                 </div>
-                <div style={{ fontSize: 12, color: '#9a9a9a' }}>Zone {g.zone}</div>
+              ))}
+            </div>
+          </Panel>
+
+          {selGate && (
+            <Panel title={`Gate ${selGate.id}`} icon="route" live accent={ACCENT} className="ff-rise-card ff-st3">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 34, color: selGate.waitMin >= 10 ? 'var(--c-red)' : 'var(--text)' }}>{selGate.waitMin}<span style={{ fontSize: 15, color: 'var(--muted)', fontWeight: 600 }}> min</span></div>
+                  <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4 }}>{selGate.isClosed ? 'Currently closed' : `${selGate.density}% density`}</div>
+                </div>
+                <Sparkline data={selGate.trend} color={selGate.density >= 85 ? '#e4002b' : ACCENT} width={90} height={38} />
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: g.isClosed ? '#6c6c6c' : '#f4f4f4' }}>
-                  {g.isClosed ? '—' : `${g.waitMin}m`}
-                </div>
-                <div style={{ fontSize: 11, color: '#6c6c6c' }}>
-                  {g.isClosed ? 'Closed' : `${g.density}% full`}
-                </div>
+              <div style={{ marginTop: 14, fontSize: 12.5, color: 'var(--faint)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Icon name="info" size={14} /> Tap any gate pin on the map to compare.
               </div>
-            </button>
-          ))}
+            </Panel>
+          )}
         </div>
       </div>
-    </div>
-  )
-}
-
-function Legend({ color, label }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ width: 8, height: 8, borderRadius: '50%', background: color }} />
-      <span style={{ fontSize: 11, color: '#9a9a9a' }}>{label}</span>
     </div>
   )
 }

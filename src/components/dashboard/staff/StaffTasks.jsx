@@ -1,104 +1,73 @@
-import { BRICOLAGE, HANKEN } from '../../ui.js'
-import { C } from '../../../data.js'
-import StadiumMap from '../shared/StadiumMap.jsx'
+import { useEffect, useState } from 'react'
+import Icon from '../../landing/Icons.jsx'
+import PageHead from '../shared/PageHead.jsx'
+import Panel from '../shared/Panel.jsx'
+import { toast } from '../shared/Toast.jsx'
 
-// Full task dashboard with zone map and shift schedule
-export default function StaffTasks({ nav, tasks, zones, gates, onUpdateTasks }) {
-  const taskChip = (status) => {
-    const map = { pending: 'ff-chip-pending', 'in-progress': 'ff-chip-progress', done: 'ff-chip-done' }
-    const icons = { pending: '○', 'in-progress': '◐', done: '●' }
-    return <span className={`ff-chip ${map[status] || ''}`}>{icons[status]} {status.replace('-', ' ')}</span>
+const ACCENT = '#b26a00'
+const STORE = 'ff-staff-tasks'
+const FILTERS = [['all', 'All'], ['pending', 'Pending'], ['in-progress', 'In progress'], ['done', 'Done']]
+const chipClass = p => `ff-chip ff-chip-${p === 'high' ? 'high' : p === 'medium' ? 'medium' : 'low'}`
+
+export default function StaffTasks({ tasks, onUpdateTasks }) {
+  const [filter, setFilter] = useState('all')
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE) || 'null')
+      if (saved) onUpdateTasks(prev => prev.map(t => saved[t.id] ? { ...t, status: saved[t.id] } : t))
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const setStatus = (id, status) => {
+    onUpdateTasks(prev => {
+      const next = prev.map(t => t.id === id ? { ...t, status } : t)
+      try { localStorage.setItem(STORE, JSON.stringify(Object.fromEntries(next.map(t => [t.id, t.status])))) } catch { /* ignore */ }
+      return next
+    })
+    toast(status === 'done' ? 'Task completed' : `Marked ${status.replace('-', ' ')}`, { accent: status === 'done' ? '#0e9f4f' : ACCENT })
   }
 
-  const prioChip = (priority) => {
-    const map = { high: 'ff-chip-high', medium: 'ff-chip-medium', low: 'ff-chip-low' }
-    return <span className={`ff-chip ${map[priority] || ''}`}>{priority}</span>
-  }
-
-  const markTask = (taskId, newStatus) => {
-    onUpdateTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t))
-  }
+  const shown = tasks.filter(t => filter === 'all' || t.status === filter)
+  const counts = { pending: tasks.filter(t => t.status === 'pending').length, 'in-progress': tasks.filter(t => t.status === 'in-progress').length, done: tasks.filter(t => t.status === 'done').length }
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-      <button className="ff-breadcrumb" onClick={() => nav('staff-dashboard')}>
-        ← Dashboard
-      </button>
+    <div>
+      <PageHead eyebrow="Tasks" title="Your task board" subtitle={`${counts.pending} pending · ${counts['in-progress']} active · ${counts.done} done`} />
 
-      <h2 style={{
-        fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 28,
-        color: '#f4f4f4', textTransform: 'uppercase', marginBottom: 24,
-      }}>
-        Task Dashboard
-      </h2>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        {FILTERS.map(([id, label]) => (
+          <button key={id} className={`ff-filter-chip${filter === id ? ' active' : ''}`} onClick={() => setFilter(id)}>
+            {label}{id !== 'all' && counts[id] != null ? ` · ${counts[id]}` : ''}
+          </button>
+        ))}
+      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
-        {/* Zone map */}
-        <div className="ff-dash-card" style={{ padding: 24 }}>
-          <div style={{
-            fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',
-            textTransform: 'uppercase', color: '#6c6c6c', marginBottom: 16,
-          }}>
-            Zone overview
-          </div>
-          <StadiumMap zones={zones} gates={gates} accent={C.green} mode="heatmap" />
-        </div>
-
-        {/* Full task list */}
-        <div className="ff-dash-card" style={{ padding: 24 }}>
-          <div style={{
-            fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',
-            textTransform: 'uppercase', color: '#6c6c6c', marginBottom: 16,
-          }}>
-            All tasks — today
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {tasks.map(t => (
-              <div key={t.id} style={{
-                padding: '16px', borderRadius: 12,
-                background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{
-                      fontSize: 14, fontWeight: 500, color: t.status === 'done' ? '#6c6c6c' : '#f4f4f4',
-                      textDecoration: t.status === 'done' ? 'line-through' : 'none',
-                    }}>
-                      {t.title}
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                      {taskChip(t.status)}
-                      {prioChip(t.priority)}
-                      <span style={{ fontSize: 11, color: '#4a4a4a', padding: '4px 0' }}>
-                        Zone {t.zone} · {t.time}
-                      </span>
-                    </div>
-                  </div>
-                  {t.status !== 'done' && (
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      {t.status === 'pending' && (
-                        <button onClick={() => markTask(t.id, 'in-progress')} style={{
-                          padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.green}44`,
-                          background: 'transparent', color: C.green, fontSize: 11, fontWeight: 600,
-                          cursor: 'pointer', fontFamily: HANKEN, textTransform: 'uppercase',
-                        }}>
-                          Accept
-                        </button>
-                      )}
-                      <button onClick={() => markTask(t.id, 'done')} style={{
-                        padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.12)',
-                        background: 'transparent', color: '#9a9a9a', fontSize: 11, fontWeight: 600,
-                        cursor: 'pointer', fontFamily: HANKEN, textTransform: 'uppercase',
-                      }}>
-                        Done
-                      </button>
-                    </div>
-                  )}
-                </div>
+      <div style={{ display: 'grid', gap: 12 }}>
+        {shown.length === 0 ? (
+          <Panel><div className="ff-empty"><span className="ff-empty-icon"><Icon name="clipboard" size={26} /></span><div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>No tasks assigned</div><p className="ff-empty-text">Tasks show up here as they're assigned to you. You have none right now.</p></div></Panel>
+        ) : shown.map((t, i) => (
+          <div key={t.id} className={`ff-panel ff-rise-card ff-st${Math.min(i + 1, 8)}`} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 20px', opacity: t.status === 'done' ? 0.66 : 1 }}>
+            <span style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              color: t.status === 'done' ? '#0e9f4f' : ACCENT, background: t.status === 'done' ? 'rgba(14,159,79,0.12)' : 'rgba(178,106,0,0.1)', border: `1px solid ${t.status === 'done' ? 'rgba(14,159,79,0.24)' : 'rgba(178,106,0,0.24)'}` }}>
+              <Icon name={t.status === 'done' ? 'check' : 'clipboard'} size={19} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', textDecoration: t.status === 'done' ? 'line-through' : 'none' }}>{t.title}</span>
+                <span className={chipClass(t.priority)}>{t.priority}</span>
+                <span className={`ff-chip ff-chip-${t.status === 'done' ? 'done' : t.status === 'in-progress' ? 'progress' : 'pending'}`}>{t.status.replace('-', ' ')}</span>
               </div>
-            ))}
+              <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4 }}>Zone {t.zone} · scheduled {t.time}</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              {t.status === 'pending' && <button className="ff-filter-chip" onClick={() => setStatus(t.id, 'in-progress')}>Start</button>}
+              {t.status !== 'done' && <button className="ff-filter-chip" style={{ borderColor: '#0e9f4f', color: '#0e9f4f' }} onClick={() => setStatus(t.id, 'done')}>Complete</button>}
+              {t.status === 'done' && <button className="ff-filter-chip" onClick={() => setStatus(t.id, 'pending')}>Reopen</button>}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   )

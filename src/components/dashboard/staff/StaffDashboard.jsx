@@ -1,193 +1,109 @@
 import { BRICOLAGE, HANKEN } from '../../ui.js'
-import { C } from '../../../data.js'
-import CapacityGauge from '../shared/CapacityGauge.jsx'
+import PageHead from '../shared/PageHead.jsx'
+import Panel from '../shared/Panel.jsx'
+import StatCard from '../shared/StatCard.jsx'
+import ProgressRing from '../shared/ProgressRing.jsx'
+import WeatherTile from '../shared/WeatherTile.jsx'
+import DataPending from '../shared/DataPending.jsx'
+import { toast } from '../shared/Toast.jsx'
 
-// Staff Dashboard Home — "Your shift"
+const ACCENT = '#b26a00'
+const DUTY = [
+  { id: 'available', label: 'Available', color: '#0e9f4f' },
+  { id: 'on-break', label: 'On break', color: '#b26a00' },
+  { id: 'off-duty', label: 'Off duty', color: '#7a9585' },
+]
+
 export default function StaffDashboard({ nav, staffRoster, tasks, zones, onUpdateTasks, onUpdateStaff }) {
-  // Current staffer (first in roster for demo)
   const me = staffRoster[0]
-  const myZone = zones.find(z => z.id === me.zone)
-  const myTasks = tasks.filter(t => t.zone === me.zone || t.status !== 'done')
-  const doneCount = tasks.filter(t => t.status === 'done').length
-  const zonePct = myZone ? Math.round((myZone.current / myZone.capacity) * 100) : 0
-  const zoneWarn = zonePct >= 85
 
-  const statusOptions = ['available', 'on-break', 'off-duty']
-  const statusLabels = { available: 'Available', 'on-break': 'On break', 'off-duty': 'Off duty' }
-  const statusColors = { available: '#2fa24e', 'on-break': '#ffa500', 'off-duty': '#6c6c6c' }
-
-  const cycleStatus = () => {
-    const idx = statusOptions.indexOf(me.status)
-    const next = statusOptions[(idx + 1) % statusOptions.length]
-    onUpdateStaff(staffRoster.map(s => s.id === me.id ? { ...s, status: next } : s))
-  }
-
-  const markTask = (taskId, newStatus) => {
-    onUpdateTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t))
-  }
-
-  const taskChip = (status) => {
-    const map = { pending: 'ff-chip-pending', 'in-progress': 'ff-chip-progress', done: 'ff-chip-done' }
-    const icons = { pending: '○', 'in-progress': '◐', done: '●' }
+  // No staff account is linked yet, so there is no real shift to show.
+  if (!me) {
     return (
-      <span className={`ff-chip ${map[status] || ''}`}>
-        {icons[status]} {status.replace('-', ' ')}
-      </span>
+      <div>
+        <PageHead eyebrow="Staff" title="Your shift" subtitle="Your shift, tasks and zone alerts show up here once you're on the team for this match." />
+        <div className="ff-two-col" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18, alignItems: 'start' }}>
+          <Panel className="ff-rise-card ff-st1">
+            <DataPending icon="clipboard" title="No shift data yet" message="Once you're on the team for this match and your shift starts, your tasks, shift times and zone alerts appear here." style={{ padding: '52px 24px' }} />
+          </Panel>
+          <div className="ff-rise-card ff-st2"><WeatherTile /></div>
+        </div>
+      </div>
     )
   }
 
+  const myZone = zones.find(z => z.id === me.zone) || zones[0]
+  const zonePct = Math.round((myZone.current / myZone.capacity) * 100)
+  const done = tasks.filter(t => t.status === 'done').length
+  const inProg = tasks.filter(t => t.status === 'in-progress').length
+  const pending = tasks.filter(t => t.status === 'pending').length
+  const taskPct = Math.round((done / tasks.length) * 100)
+  const upNext = tasks.filter(t => t.status !== 'done').slice(0, 3)
+
+  const fmt = t => { const d = new Date(t); return isNaN(d) ? t : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) }
+  const setDuty = (v) => { onUpdateStaff(prev => prev.map((s, i) => i === 0 ? { ...s, status: v } : s)); toast(`Status: ${v.replace('-', ' ')}`, { accent: ACCENT }) }
+  const complete = (id) => { onUpdateTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'done' } : t)); toast('Task completed', { accent: '#0e9f4f' }) }
+
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
-      <div style={{ marginBottom: 8 }}>
-        <span style={{
-          fontFamily: HANKEN, fontSize: 11, fontWeight: 600,
-          letterSpacing: '0.15em', textTransform: 'uppercase', color: C.green,
-        }}>
-          Your shift
-        </span>
+    <div>
+      <PageHead eyebrow={`${me.role} · Zone ${me.zone}`} title={`Hi ${me.name.split(' ')[0]}`} subtitle="Your shift at a glance." />
+
+      <div className="ff-kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 18 }}>
+        <div className="ff-rise-card ff-st1"><StatCard icon="check" label="Tasks done" value={done} suffix={`/${tasks.length}`} accent="#0e9f4f" /></div>
+        <div className="ff-rise-card ff-st2"><StatCard icon="clock" label="In progress" value={inProg} accent={ACCENT} /></div>
+        <div className="ff-rise-card ff-st3"><StatCard icon="grid" label={`Zone ${me.zone} density`} value={zonePct} suffix="%" accent={zonePct >= 85 ? '#e4002b' : ACCENT} /></div>
+        <div className="ff-rise-card ff-st4"><StatCard icon="alert" label="Incidents filed" value={me.incidentsFiled} accent="#e4002b" /></div>
       </div>
 
-      {/* Zone + status header */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 20, marginBottom: 24, alignItems: 'start' }}>
-        <div className="ff-dash-card" style={{ padding: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ fontSize: 13, color: '#6c6c6c' }}>Assigned zone</div>
-              <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 24, color: '#f4f4f4' }}>
-                {myZone?.name || `Zone ${me.zone}`}
+      <div className="ff-two-col" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 18, alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <Panel title="My shift" icon="clock" accent={ACCENT} className="ff-rise-card ff-st5">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{fmt(me.shiftStart)} — {fmt(me.shiftEnd)}</div>
+                <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>{me.role} · assigned to Zone {me.zone}</div>
               </div>
-            </div>
-            <div style={{ height: 40, width: 1, background: 'rgba(255,255,255,0.08)' }} />
-            <div>
-              <div style={{ fontSize: 13, color: '#6c6c6c' }}>Shift</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#f4f4f4' }}>
-                {new Date(me.shiftStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} — {new Date(me.shiftEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            </div>
-            <div style={{ height: 40, width: 1, background: 'rgba(255,255,255,0.08)' }} />
-            <div>
-              <div style={{ fontSize: 13, color: '#6c6c6c', marginBottom: 4 }}>Tasks completed</div>
-              <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 24, color: C.green }}>
-                {doneCount}/{tasks.length}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Status toggle */}
-        <button
-          onClick={cycleStatus}
-          className="ff-dash-card"
-          style={{
-            padding: '16px 24px', cursor: 'pointer', textAlign: 'center',
-            borderColor: `${statusColors[me.status]}44`,
-          }}
-        >
-          <div style={{ fontSize: 11, color: '#6c6c6c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
-            Status
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
-            <span className={`ff-status-dot ${me.status}`} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: statusColors[me.status] }}>
-              {statusLabels[me.status]}
-            </span>
-          </div>
-          <div style={{ fontSize: 10, color: '#4a4a4a', marginTop: 6 }}>Tap to change</div>
-        </button>
-      </div>
-
-      {/* Crowd alert banner */}
-      {zoneWarn && (
-        <div style={{
-          padding: '14px 20px', borderRadius: 12, marginBottom: 20,
-          background: 'rgba(226,58,69,0.08)', border: '1px solid rgba(226,58,69,0.2)',
-          display: 'flex', alignItems: 'center', gap: 12,
-        }}>
-          <span style={{ fontSize: 20 }}>⚠️</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#e23a45' }}>
-              Zone {me.zone} nearing capacity — {zonePct}%
-            </div>
-            <div style={{ fontSize: 13, color: '#9a9a9a' }}>
-              Stay alert. Consider redirecting fans to adjacent zones.
-            </div>
-          </div>
-          <button
-            onClick={() => nav('staff-zones')}
-            style={{
-              padding: '8px 16px', borderRadius: 20, border: '1px solid rgba(226,58,69,0.3)',
-              background: 'transparent', color: '#e23a45', fontSize: 12, fontWeight: 600,
-              cursor: 'pointer', fontFamily: HANKEN, textTransform: 'uppercase',
-            }}
-          >
-            View zones
-          </button>
-        </div>
-      )}
-
-      {/* Task list */}
-      <div className="ff-dash-card" style={{ padding: 24 }}>
-        <div style={{
-          fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',
-          textTransform: 'uppercase', color: '#6c6c6c', marginBottom: 16,
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        }}>
-          <span>Shift tasks</span>
-          <button
-            onClick={() => nav('staff-tasks')}
-            style={{
-              border: 'none', background: 'none', color: C.green,
-              fontSize: 12, cursor: 'pointer', fontWeight: 600, fontFamily: HANKEN,
-            }}
-          >
-            View all →
-          </button>
-        </div>
-
-        {myTasks.length === 0 ? (
-          <div className="ff-empty">
-            <span className="ff-empty-icon">✅</span>
-            <p className="ff-empty-text">All tasks completed. Great work!</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {myTasks.map(t => (
-              <div
-                key={t.id}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
-                  borderRadius: 12, background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontSize: 14, fontWeight: 500, color: t.status === 'done' ? '#6c6c6c' : '#f4f4f4',
-                    textDecoration: t.status === 'done' ? 'line-through' : 'none',
-                  }}>
-                    {t.title}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#4a4a4a', marginTop: 2 }}>
-                    Zone {t.zone} · {t.time}
-                  </div>
-                </div>
-                {taskChip(t.status)}
-                {t.status !== 'done' && (
-                  <button
-                    onClick={() => markTask(t.id, t.status === 'pending' ? 'in-progress' : 'done')}
-                    style={{
-                      padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.green}44`,
-                      background: 'transparent', color: C.green, fontSize: 11, fontWeight: 600,
-                      cursor: 'pointer', fontFamily: HANKEN, textTransform: 'uppercase',
-                    }}
-                  >
-                    {t.status === 'pending' ? 'Start' : 'Done'}
+              <div style={{ display: 'inline-flex', gap: 6, background: 'var(--elev-2)', padding: 5, borderRadius: 30, border: '1px solid var(--line)' }}>
+                {DUTY.map(d => (
+                  <button key={d.id} onClick={() => setDuty(d.id)} className="ff-press"
+                    style={{ border: 'none', cursor: 'pointer', padding: '8px 14px', borderRadius: 24, fontFamily: HANKEN, fontWeight: 700, fontSize: 12,
+                      background: me.status === d.id ? d.color : 'transparent', color: me.status === d.id ? '#fff' : 'var(--muted)' }}>
+                    {d.label}
                   </button>
-                )}
+                ))}
+              </div>
+            </div>
+          </Panel>
+
+          <Panel title="Up next" icon="clipboard" accent={ACCENT} className="ff-rise-card ff-st6"
+            action={<button className="ff-filter-chip" onClick={() => nav('staff-tasks')}>All tasks</button>}>
+            {upNext.length === 0 ? (
+              <div style={{ fontSize: 14, color: 'var(--muted)', padding: '8px 0' }}>All tasks complete. Great work.</div>
+            ) : upNext.map(t => (
+              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 0', borderBottom: '1px solid var(--line-soft)' }}>
+                <span className={`ff-chip ff-chip-${t.priority === 'high' ? 'high' : t.priority === 'medium' ? 'medium' : 'low'}`}>{t.priority}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text)' }}>{t.title}</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 2 }}>Zone {t.zone} · {t.time}</div>
+                </div>
+                <button onClick={() => complete(t.id)} className="ff-filter-chip" style={{ padding: '6px 12px' }}>Complete</button>
               </div>
             ))}
-          </div>
-        )}
+          </Panel>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <Panel title="Task progress" icon="check" accent={ACCENT} className="ff-rise-card ff-st5">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+              <ProgressRing value={taskPct} size={92} color="#0e9f4f" sub="done" />
+              <div>
+                <div style={{ fontSize: 14, color: 'var(--text-2)' }}><b>{done}</b> done · <b>{inProg}</b> active · <b>{pending}</b> pending</div>
+                <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 8 }}>Keep it up — you're {taskPct}% through today's list.</div>
+              </div>
+            </div>
+          </Panel>
+          <div className="ff-rise-card ff-st6"><WeatherTile /></div>
+        </div>
       </div>
     </div>
   )

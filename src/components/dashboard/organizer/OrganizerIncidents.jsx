@@ -1,123 +1,67 @@
-import { BRICOLAGE, HANKEN } from '../../ui.js'
-import { C } from '../../../data.js'
+import { useState } from 'react'
+import Icon from '../../landing/Icons.jsx'
+import PageHead from '../shared/PageHead.jsx'
+import Panel from '../shared/Panel.jsx'
+import { toast } from '../shared/Toast.jsx'
 
-// Incident Queue — AI-triaged severity-sorted list from shared incident data
-export default function OrganizerIncidents({ nav, incidents, staffRoster, onUpdateIncidents }) {
-  const sorted = [...incidents].sort((a, b) => {
-    const sev = { high: 0, medium: 1, low: 2 }
-    return (sev[a.severity] ?? 3) - (sev[b.severity] ?? 3)
-  })
+const FILTERS = [['all', 'All'], ['new', 'New'], ['assigned', 'Assigned'], ['resolved', 'Resolved']]
+const sevClass = s => `ff-chip ff-chip-${s === 'high' ? 'high' : s === 'medium' ? 'medium' : 'low'}`
+const statusClass = s => `ff-chip ff-chip-${s === 'resolved' ? 'resolved' : s === 'assigned' ? 'assigned' : 'new'}`
+function timeAgo(iso) { const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000); if (m < 1) return 'Just now'; if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); return h < 24 ? `${h}h ago` : `${Math.floor(h / 24)}d ago` }
 
-  const updateStatus = (incId, newStatus) => {
-    onUpdateIncidents(incidents.map(i => i.id === incId ? { ...i, status: newStatus } : i))
-  }
+export default function OrganizerIncidents({ incidents, staffRoster, onUpdateIncidents }) {
+  const [filter, setFilter] = useState('all')
+  const shown = incidents.filter(i => filter === 'all' || i.status === filter)
+  const counts = { new: incidents.filter(i => i.status === 'new').length, assigned: incidents.filter(i => i.status === 'assigned').length, resolved: incidents.filter(i => i.status === 'resolved').length }
 
-  const assignStaff = (incId, staffName) => {
-    onUpdateIncidents(incidents.map(i =>
-      i.id === incId ? { ...i, assignedTo: staffName, status: 'assigned' } : i
-    ))
-  }
-
-  const statusIcon = { new: '🔴', assigned: '🟡', resolved: '🟢' }
+  const assign = (id, name) => { onUpdateIncidents(prev => prev.map(i => i.id === id ? { ...i, assignedTo: name, status: 'assigned' } : i)); toast(`Assigned to ${name}`, { accent: '#1673a8' }) }
+  const resolve = (id) => { onUpdateIncidents(prev => prev.map(i => i.id === id ? { ...i, status: 'resolved' } : i)); toast('Incident resolved', { accent: '#0e9f4f' }) }
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto' }}>
-      <button className="ff-breadcrumb" onClick={() => nav('organizer-dashboard')}>
-        ← Dashboard
-      </button>
+    <div>
+      <PageHead eyebrow="Incidents" title="Triage queue" subtitle={`${counts.new} new · ${counts.assigned} in progress · ${counts.resolved} resolved`} />
 
-      <h2 style={{
-        fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 28,
-        color: '#f4f4f4', textTransform: 'uppercase', marginBottom: 8,
-      }}>
-        Incident Queue
-      </h2>
-      <p style={{ fontSize: 14, color: '#9a9a9a', marginBottom: 24 }}>
-        AI-triaged by severity. Assign staff and track resolution.
-      </p>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        {FILTERS.map(([id, label]) => (
+          <button key={id} className={`ff-filter-chip${filter === id ? ' active' : ''}`} onClick={() => setFilter(id)}>{label}{id !== 'all' ? ` · ${counts[id]}` : ''}</button>
+        ))}
+      </div>
 
-      {sorted.length === 0 ? (
-        <div className="ff-empty">
-          <span className="ff-empty-icon">✅</span>
-          <p className="ff-empty-text">No incidents reported — that's a good sign.</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {sorted.map(inc => (
-            <div key={inc.id} className="ff-dash-card" style={{
-              padding: 24,
-              borderColor: inc.severity === 'high' && inc.status !== 'resolved'
-                ? 'rgba(226,58,69,0.25)' : undefined,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <span className={`ff-chip ff-chip-${inc.severity}`}>{inc.severity}</span>
-                  <span className={`ff-chip ff-chip-${inc.status}`}>
-                    {statusIcon[inc.status]} {inc.status}
-                  </span>
+      <div style={{ display: 'grid', gap: 12 }}>
+        {shown.length === 0 ? (
+          <Panel><div className="ff-empty"><span className="ff-empty-icon"><Icon name="alert" size={26} /></span><div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>No incidents reported</div><p className="ff-empty-text">Incidents appear here in real time as staff file them from the Report Incident screen. There are none right now.</p></div></Panel>
+        ) : shown.map((inc, i) => (
+          <div key={inc.id} className={`ff-panel ff-rise-card ff-st${Math.min(i + 1, 8)}`} style={{ opacity: inc.status === 'resolved' ? 0.7 : 1, borderLeft: `3px solid ${inc.severity === 'high' ? '#e4002b' : inc.severity === 'medium' ? '#c8890a' : '#0e9f4f'}` }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 240 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+                  <span className={sevClass(inc.severity)}>{inc.severity}</span>
+                  <span className="ff-chip" style={{ background: 'var(--fill-2)', color: 'var(--muted)', textTransform: 'capitalize' }}>{inc.category}</span>
+                  <span className={statusClass(inc.status)}>{inc.status}</span>
+                  <span style={{ fontSize: 11.5, color: 'var(--faint)', fontFamily: 'monospace' }}>{inc.id}</span>
                 </div>
-                <span style={{ fontSize: 11, color: '#4a4a4a', marginLeft: 'auto' }}>{inc.id}</span>
+                <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text)' }}>{inc.title}</div>
+                <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 5, lineHeight: 1.5, maxWidth: 620 }}>{inc.description}</div>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 10, fontSize: 12.5, color: 'var(--faint)' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Icon name="map" size={13} /> {inc.location}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Icon name="user" size={13} /> {inc.reportedBy}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Icon name="clock" size={13} /> {timeAgo(inc.reportedAt)}</span>
+                  {inc.assignedTo && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: '#1673a8' }}><Icon name="check" size={13} /> {inc.assignedTo}</span>}
+                </div>
               </div>
-
-              <div style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f4', marginBottom: 6 }}>
-                {inc.title}
-              </div>
-              <div style={{ fontSize: 13, color: '#9a9a9a', lineHeight: 1.5, marginBottom: 12 }}>
-                {inc.description}
-              </div>
-
-              <div style={{ display: 'flex', gap: 20, fontSize: 12, color: '#6c6c6c', marginBottom: 14, flexWrap: 'wrap' }}>
-                <span>📍 {inc.location}</span>
-                <span>👤 Reported by: {inc.reportedBy}</span>
-                <span>🕐 {_timeAgo(inc.reportedAt)}</span>
-                {inc.assignedTo && <span>🎯 Assigned to: {inc.assignedTo}</span>}
-              </div>
-
               {inc.status !== 'resolved' && (
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                  {inc.status === 'new' && (
-                    <select
-                      onChange={e => e.target.value && assignStaff(inc.id, e.target.value)}
-                      defaultValue=""
-                      style={{
-                        background: '#1c1c1c', border: '1px solid rgba(255,255,255,0.12)',
-                        color: '#cfcfcf', padding: '8px 14px', borderRadius: 10,
-                        fontSize: 12, fontFamily: HANKEN,
-                      }}
-                      aria-label={`Assign staff to ${inc.id}`}
-                    >
-                      <option value="" disabled>Assign to staff...</option>
-                      {staffRoster.filter(s => s.status === 'available').map(s => (
-                        <option key={s.id} value={s.name}>{s.name} — {s.role} (Zone {s.zone})</option>
-                      ))}
-                    </select>
-                  )}
-                  {inc.status === 'assigned' && (
-                    <button
-                      onClick={() => updateStatus(inc.id, 'resolved')}
-                      style={{
-                        padding: '8px 18px', borderRadius: 20, border: 'none',
-                        background: '#2fa24e', color: '#fff', fontSize: 12, fontWeight: 600,
-                        cursor: 'pointer', fontFamily: HANKEN, textTransform: 'uppercase',
-                      }}
-                    >
-                      Mark resolved
-                    </button>
-                  )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, minWidth: 160 }}>
+                  <select defaultValue="" onChange={e => e.target.value && assign(inc.id, e.target.value)} className="ff-dash-input" style={{ padding: '9px 12px', fontSize: 13 }}>
+                    <option value="" disabled>Assign to…</option>
+                    {staffRoster.filter(s => s.status !== 'off-duty').map(s => <option key={s.id} value={s.name}>{s.name} · {s.role}</option>)}
+                  </select>
+                  <button onClick={() => resolve(inc.id)} className="ff-btn" style={{ padding: '10px', borderRadius: 12, border: 'none', color: '#fff', fontWeight: 700, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: 'pointer' }}>Resolve</button>
                 </div>
               )}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   )
-}
-
-function _timeAgo(iso) {
-  const diff = Date.now() - new Date(iso).getTime()
-  const min = Math.floor(diff / 60000)
-  if (min < 1) return 'Just now'
-  if (min < 60) return `${min}m ago`
-  return `${Math.floor(min / 60)}h ago`
 }

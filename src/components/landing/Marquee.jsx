@@ -6,10 +6,10 @@ export default function Marquee() {
     <section
       style={{
         padding: '52px 0',
-        borderTop: '1px solid rgba(255,255,255,0.10)',
-        borderBottom: '1px solid rgba(255,255,255,0.10)',
+        borderTop: '1px solid rgba(14,159,79,0.14)',
+        borderBottom: '1px solid rgba(14,159,79,0.14)',
         overflow: 'hidden',
-        background: '#0b0b0b',
+        background: 'linear-gradient(180deg,#ffffff 0%,#eef8f0 100%)',
       }}
     >
       <div

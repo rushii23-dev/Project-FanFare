@@ -5,24 +5,94 @@
 
 :root {
   --ff-glow: 0.7; /* "Light" intensity — was an editor prop in the design */
+
+  /* ---------- dashboard tokens: BRIGHT (single theme, matches landing) ---------- */
+  --bg: #eef5f0;
+  --panel: #ffffff;
+  --elev: #ffffff;
+  --elev-2: #f1f7f2;
+  --topbar: rgba(255,255,255,0.82);
+  --sidebar: #ffffff;
+  --drawer: #ffffff;
+  --menu: #ffffff;
+
+  --line: rgba(10,60,30,0.1);
+  --line-soft: rgba(10,60,30,0.06);
+  --line-strong: rgba(10,60,30,0.14);
+  --line-xstrong: rgba(10,60,30,0.2);
+  --fill: rgba(10,60,30,0.03);
+  --fill-soft: rgba(10,60,30,0.02);
+  --fill-2: rgba(10,60,30,0.04);
+  --fill-hover: rgba(10,60,30,0.06);
+  --hair: rgba(10,60,30,0.18);
+
+  --text: #08210f;
+  --text-2: #2f4a3a;
+  --muted: #5a7565;
+  --faint: #7a9585;
+  --faint-2: #9ab0a2;
+
+  --skel-a: #e7f1e9;
+  --skel-b: #f3f9f4;
+  --hero-tint: #e6f4ea;
+  --shadow: rgba(10,60,30,0.1);
+  --shadow-strong: rgba(10,60,30,0.16);
+  --scrollbar: #cfe0d4;
+  --scrollbar-hover: #b6ccbc;
+
+  /* accents — FIFA palette (AA on white) */
+  --c-blue: #1aa5e0;
+  --c-green: #0e9f4f;
+  --c-red: #e4002b;
+  --c-amber: #b26a00;
+
+  /* ===== FIFA World Cup 26 "Trionda" — BRIGHT daylight-stadium palette ===== */
+  --ff-paper: #ffffff;       /* clean base */
+  --ff-mist: #eef8f0;        /* faint pitch-tinted surface */
+  --ff-mist-2: #e3f2e6;      /* deeper mist for bands */
+  --ff-ink: #08210f;         /* dark pitch-ink text */
+  --ff-ink-2: #37533f;       /* body text */
+  --ff-ink-3: #6a8574;       /* muted */
+  --ff-pitch: #0e9f4f;       /* vivid grass green (primary) */
+  --ff-pitch-deep: #0a7a3c;
+  --ff-lime: #7ed957;        /* fresh highlight green */
+  --ff-gold: #f5b301;        /* stadium-light gold */
+  --ff-amber: #ff8a1e;
+  --ff-red: #e4002b;         /* host red accent */
+  --ff-blue: #1aa5e0;        /* host blue accent (used sparingly) */
+  /* signature pitch gradient (green → lime → gold) */
+  --ff-pitchgrad: linear-gradient(100deg, #0a7a3c 0%, #0e9f4f 34%, #7ed957 66%, #f5b301 100%);
+  --ff-trionda: linear-gradient(100deg, #0e9f4f 0%, #f5b301 52%, #e4002b 100%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: #070707; }
+html, body { background: #ffffff; }
 body {
   font-family: 'Hanken Grotesk', system-ui, sans-serif;
-  color: #f4f4f4;
+  color: #08210f;
   -webkit-font-smoothing: antialiased;
 }
 #root { min-height: 100vh; }
-a { color: #f4f4f4; text-decoration: none; }
-a:hover { color: #ffffff; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: inherit; }
 button { font-family: inherit; }
 ::selection { background: #ffffff; color: #000000; }
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: #070707; }
-::-webkit-scrollbar-thumb { background: #242424; border-radius: 20px; }
-::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* Smooth cross-fade when the theme flips.
+   Only active for the brief window after a toggle (html.ff-theming),
+   so it never competes with per-element hover transitions. */
+@media (prefers-reduced-motion: no-preference) {
+  html.ff-theming .ff-dashboard,
+  html.ff-theming .ff-dashboard *:not(button):not(a) {
+    transition: background-color .34s cubic-bezier(.2,.7,.2,1),
+                border-color .34s cubic-bezier(.2,.7,.2,1),
+                color .34s cubic-bezier(.2,.7,.2,1) !important;
+  }
+}
 
 /* ---------- keyframes ---------- */
 @keyframes ff-rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
@@ -73,9 +143,9 @@ button { font-family: inherit; }
 .ff-outline { transition: border-color .4s; }
 .ff-outline:hover { border-color: rgba(255,255,255,0.9) !important; }
 
-/* ---------- marquee color band ---------- */
-.ff-mq { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; background-image: linear-gradient(100deg, #ff7a3d, #ff2e88, #a24bff, #2ea6ff, #34e5c4, #ff7a3d); background-size: 300% 100%; animation: ff-shimmer 7s linear infinite; }
-.ff-mq-out { background-image: linear-gradient(100deg, #2ea6ff, #34e5c4, #a24bff, #ff2e88, #2ea6ff); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; opacity: 0.5; animation: ff-shimmer 8s linear infinite reverse; }
+/* ---------- marquee color band (all words filled + vibrant) ---------- */
+.ff-mq { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; background-image: linear-gradient(100deg, #0a7a3c, #0e9f4f, #7ed957, #f5b301, #e4002b, #0a7a3c); background-size: 300% 100%; animation: ff-shimmer 7s linear infinite; }
+.ff-mq-out { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; background-image: linear-gradient(100deg, #e4002b, #ff8a1e, #f5b301, #1aa5e0, #e4002b); background-size: 300% 100%; animation: ff-shimmer 8s linear infinite reverse; }
 
 /* ---------- generic hover-lift for cards (reused via class) ---------- */
 .ff-card { transition: transform .55s cubic-bezier(.2,.7,.2,1), border-color .45s, box-shadow .45s; }
@@ -98,11 +168,179 @@ button { font-family: inherit; }
 .ff-portalcta:hover .ff-arrow { transform: translateX(4px); border-color: #ffffff; }
 
 /* ---------- text inputs ---------- */
-.ff-input { width: 100%; background: transparent; border: 1px solid #333333; color: #f4f4f4; font-size: 16px; font-family: 'Hanken Grotesk', sans-serif; padding: 15px 22px; border-radius: 32px; outline: none; transition: border-color .3s; }
-.ff-input::placeholder { color: #6c6c6c; }
-.ff-input:focus { border-color: #2aa5e0; }
+.ff-input { width: 100%; background: transparent; border: 1px solid var(--hair); color: var(--text); font-size: 16px; font-family: 'Hanken Grotesk', sans-serif; padding: 15px 22px; border-radius: 32px; outline: none; transition: border-color .3s; }
+.ff-input::placeholder { color: var(--faint); }
+.ff-input:focus { border-color: var(--c-blue); }
+
+/* ---------- bright login inputs ---------- */
+.ff-login-input { width: 100%; background: #ffffff; border: 1px solid rgba(14,159,79,0.24); color: #08210f; font-size: 16px; font-family: 'Hanken Grotesk', sans-serif; padding: 15px 22px; border-radius: 32px; outline: none; transition: border-color .3s, box-shadow .3s; }
+.ff-login-input::placeholder { color: #8aa596; }
+.ff-login-input:focus { border-color: #0e9f4f; box-shadow: 0 0 0 4px rgba(14,159,79,0.12); }
+
+/* ============================================================
+   FIFA World Cup 26 "Trionda" — landing motion system
+   ============================================================ */
+
+/* ---------- selection tinted to pitch-green ---------- */
+::selection { background: #0e9f4f; color: #ffffff; }
+
+/* ---------- keyframes ---------- */
+@keyframes ff-grad-pan { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+@keyframes ff-grad-pan-y { 0% { background-position: 50% 0%; } 100% { background-position: 50% 200%; } }
+@keyframes ff-aurora-a { 0%,100% { transform: translate(0,0) scale(1); opacity: .8; } 33% { transform: translate(8%,-6%) scale(1.15); opacity: 1; } 66% { transform: translate(-6%,5%) scale(0.95); opacity: .7; } }
+@keyframes ff-aurora-b { 0%,100% { transform: translate(0,0) scale(1.05); opacity: .7; } 40% { transform: translate(-9%,7%) scale(1.2); opacity: 1; } 75% { transform: translate(7%,-5%) scale(0.9); opacity: .6; } }
+@keyframes ff-aurora-c { 0%,100% { transform: translate(0,0) scale(1); opacity: .6; } 50% { transform: translate(6%,8%) scale(1.18); opacity: .95; } }
+@keyframes ff-confetti { 0% { transform: translateY(-12vh) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { transform: translateY(112vh) rotate(720deg); opacity: 0; } }
+@keyframes ff-pulse-ring { 0% { transform: translate(-50%,-50%) scale(.4); opacity: .7; } 100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; } }
+@keyframes ff-spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes ff-spin-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+@keyframes ff-orbit { from { transform: rotate(0deg) translateX(var(--orb, 120px)) rotate(0deg); } to { transform: rotate(360deg) translateX(var(--orb, 120px)) rotate(-360deg); } }
+@keyframes ff-bob { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-14px) rotate(1.5deg); } }
+@keyframes ff-glow-cycle {
+  0%,100% { box-shadow: 0 0 0 1px rgba(20,180,240,.4), 0 0 46px rgba(20,180,240,.28); }
+  33% { box-shadow: 0 0 0 1px rgba(35,211,110,.4), 0 0 46px rgba(35,211,110,.28); }
+  66% { box-shadow: 0 0 0 1px rgba(255,45,85,.4), 0 0 46px rgba(255,45,85,.28); }
+}
+@keyframes ff-flagwave { 0%,100% { transform: skewX(0deg) scaleY(1); } 25% { transform: skewX(-4deg) scaleY(1.03); } 75% { transform: skewX(4deg) scaleY(0.98); } }
+@keyframes ff-countpop { 0% { transform: scale(1); } 40% { transform: scale(1.16); } 100% { transform: scale(1); } }
+@keyframes ff-riseblur { 0% { opacity: 0; transform: translateY(40px); filter: blur(10px); } 100% { opacity: 1; transform: translateY(0); filter: blur(0); } }
+@keyframes ff-sheen2 { 0% { transform: translateX(-160%) skewX(-18deg); } 60%,100% { transform: translateX(320%) skewX(-18deg); } }
+@keyframes ff-dot-run { 0% { left: -10%; } 100% { left: 110%; } }
+@keyframes ff-ballspin { from { background-position: 0 0; } to { background-position: -220px 0; } }
+@keyframes ff-hue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
+@keyframes ff-star-tw { 0%,100% { opacity: .2; transform: scale(.8); } 50% { opacity: .9; transform: scale(1.15); } }
+/* auth-card entrance + staggered field rise */
+@keyframes ff-cardin { 0% { opacity: 0; transform: translateY(34px) scale(.965); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes ff-fieldin { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: none; } }
+
+.ff-cardin { animation: ff-cardin .8s cubic-bezier(.2,.8,.25,1) both; }
+.ff-fieldin { opacity: 0; animation: ff-fieldin .6s cubic-bezier(.2,.7,.2,1) both; }
+.ff-fi1 { animation-delay: .12s; } .ff-fi2 { animation-delay: .2s; } .ff-fi3 { animation-delay: .28s; }
+.ff-fi4 { animation-delay: .36s; } .ff-fi5 { animation-delay: .44s; } .ff-fi6 { animation-delay: .52s; }
+
+/* tactile press for buttons/segments */
+.ff-press { transition: transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .3s, background .25s, color .25s; }
+.ff-press:hover { transform: translateY(-1px); }
+.ff-press:active { transform: scale(.96); }
+/* light-mote drift + sunbeam sweep for the bright theme */
+@keyframes ff-mote { 0% { transform: translate(0,0); opacity: 0; } 12% { opacity: .9; } 88% { opacity: .9; } 100% { transform: translate(var(--mx,20px), calc(-1 * var(--my,120px))); opacity: 0; } }
+@keyframes ff-sunsweep { 0% { transform: translateX(-30%) rotate(8deg); opacity: 0; } 30% { opacity: .8; } 100% { transform: translateX(60%) rotate(8deg); opacity: 0; } }
+@keyframes ff-kenburns { 0% { transform: scale(1.06) translate(0,0); } 100% { transform: scale(1.14) translate(-1.5%,-1.5%); } }
+
+/* ---------- animated pitch gradient text (green→gold→red, reads on white) ---------- */
+.ff-tricolor {
+  background-image: linear-gradient(100deg, #0a7a3c 0%, #0e9f4f 26%, #f5b301 55%, #e4002b 80%, #0a7a3c 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: ff-grad-pan 9s linear infinite;
+}
+.ff-tricolor-slow { animation-duration: 16s; }
+
+/* ---------- glass panel (bright frosted white, green-tinted edge) ---------- */
+.ff-glass {
+  background: linear-gradient(158deg, rgba(255,255,255,0.9) 0%, rgba(238,248,240,0.82) 72%);
+  border: 1px solid rgba(14,159,79,0.16);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+
+/* ---------- animated gradient border wrapper ---------- */
+.ff-gborder { position: relative; }
+.ff-gborder::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
+  background: linear-gradient(120deg, #0e9f4f, #7ed957, #f5b301, #e4002b, #0e9f4f);
+  background-size: 260% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: ff-grad-pan 7s linear infinite;
+  opacity: .45; pointer-events: none; transition: opacity .4s;
+}
+.ff-gborder:hover::before { opacity: 1; }
+
+/* ---------- primary pitch CTA ---------- */
+.ff-btn { position: relative; overflow: hidden; isolation: isolate; transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .45s; }
+.ff-btn::before { content: ''; position: absolute; inset: 0; z-index: -2; background: linear-gradient(100deg, #0a7a3c, #0e9f4f, #f5b301, #0a7a3c); background-size: 220% 100%; animation: ff-grad-pan 6s linear infinite; }
+.ff-btn::after { content: ''; position: absolute; top: 0; left: 0; width: 40%; height: 100%; z-index: -1; background: linear-gradient(105deg, transparent, rgba(255,255,255,0.6), transparent); transform: translateX(-160%) skewX(-18deg); }
+.ff-btn:hover { transform: translateY(-3px); box-shadow: 0 16px 44px rgba(14,159,79,0.4), 0 8px 26px rgba(245,179,1,0.32); }
+.ff-btn:hover::after { animation: ff-sheen2 .9s ease; }
+
+/* ---------- ghost / outline CTA ---------- */
+.ff-ghost { transition: border-color .4s, background .4s, transform .3s, box-shadow .4s; }
+.ff-ghost:hover { border-color: rgba(14,159,79,0.85) !important; background: rgba(14,159,79,0.08) !important; transform: translateY(-2px); box-shadow: 0 10px 28px rgba(14,159,79,0.2); }
+
+/* ---------- card lift with coloured halo (accent via --acc) ---------- */
+.ff-fcard { transition: transform .5s cubic-bezier(.2,.7,.2,1), border-color .45s, box-shadow .45s, background .45s; }
+.ff-fcard:hover { transform: translateY(-10px); border-color: var(--acc, rgba(14,159,79,.6)) !important; box-shadow: 0 26px 60px rgba(10,60,30,0.14), 0 0 40px var(--acc-glow, rgba(14,159,79,.2)); }
+
+/* ---------- nav underline (pitch gradient) ---------- */
+.ff-fnav { position: relative; transition: color .3s; }
+.ff-fnav::after { content: ''; position: absolute; left: 16px; right: 16px; bottom: 4px; height: 2px; border-radius: 2px; background: var(--ff-trionda); transform: scaleX(0); transform-origin: left; transition: transform .4s cubic-bezier(.2,.7,.2,1); }
+.ff-fnav:hover::after { transform: scaleX(1); }
+.ff-fnav:hover { color: #08210f !important; }
+
+/* ---------- row hover for AI/portal lists (accent via --acc) ---------- */
+.ff-frow { transition: transform .4s, border-color .4s, background .4s, box-shadow .4s; }
+.ff-frow:hover { transform: translateX(8px); border-color: var(--acc, rgba(14,159,79,.5)) !important; background: rgba(14,159,79,0.05); box-shadow: -6px 0 0 -2px var(--acc, #0e9f4f); }
+
+/* ---------- reveal (blur variant) ---------- */
+.ff-reveal-b { opacity: 0; transform: translateY(40px); filter: blur(8px); transition: opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1), filter 1s; }
+.ff-reveal-b.ff-in { opacity: 1; transform: none; filter: none; }
+
+/* ---------- responsive landing layout ---------- */
+@media (max-width: 900px) {
+  .ff-how-grid { grid-template-columns: 1fr !important; }
+  .ff-how-line { display: none !important; }
+  .ff-portals-grid { grid-template-columns: 1fr !important; }
+  .ff-portal-detail-grid { grid-template-columns: 1fr !important; }
+  .ff-ai-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .ff-ai-features { grid-template-columns: repeat(2,1fr) !important; }
+}
+@media (max-width: 560px) {
+  .ff-ai-features { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 720px) {
+  .ff-nav-links { display: none !important; }
+  .ff-score-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .ff-score-grid > div:last-child { grid-column: 1 / -1; }
+  .ff-scrollball { display: none !important; }
+  .ff-about-grid { grid-template-columns: 1fr !important; }
+  .ff-stat-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .ff-commit-grid { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 900px) {
+  .ff-stat-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .ff-commit-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ---- Impact showcase pillars ---- */
+.ff-impact-pillar {
+  transition: transform .4s cubic-bezier(.2,.7,.2,1), border-color .4s, background .4s, box-shadow .4s;
+}
+.ff-impact-pillar:hover {
+  transform: translateY(-6px);
+  border-color: var(--pc, rgba(255,255,255,0.3));
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 22px 46px rgba(2,12,7,0.42);
+}
+
+/* ---- Footer links ---- */
+.ff-foot-link {
+  position: relative; width: fit-content; text-decoration: none;
+  font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; color: #a9c9b8;
+  transition: color .25s, transform .25s;
+}
+.ff-foot-link:hover { color: #ffffff; transform: translateX(4px); }
+.ff-foot-link::before {
+  content: ''; position: absolute; left: -13px; top: 50%; width: 5px; height: 5px; border-radius: 50%;
+  background: #f5b301; box-shadow: 0 0 8px #f5b301; transform: translateY(-50%) scale(0); transition: transform .25s;
+}
+.ff-foot-link:hover::before { transform: translateY(-50%) scale(1); }
+
+@media (max-width: 900px) { .ff-foot-top { grid-template-columns: 1fr 1fr !important; } }
+@media (max-width: 560px) { .ff-foot-top { grid-template-columns: 1fr !important; } }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
-  .ff-reveal { opacity: 1; transform: none; }
+  .ff-reveal, .ff-reveal-b { opacity: 1; transform: none; filter: none; }
 }

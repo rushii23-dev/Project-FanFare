@@ -1,8 +1,16 @@
 node_modules
 dist
 dist-ssr
-*.local
 .vite
+
+# Secrets. *.local covers .env.local, which holds the real GEMINI_API_KEY.
+# Never remove this rule.
+*.local
+.env.example
+
+# Agent tooling — local only
+.claude/
+.agents/
 
 # Editor / OS
 .DS_Store

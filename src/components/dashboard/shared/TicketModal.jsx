@@ -1,6 +1,8 @@
-// QR-code e-ticket modal. Shows a generated SVG QR pattern + ticket details.
-export default function TicketModal({ ticket, matchData, onClose }) {
-  if (!ticket || !matchData) return null
+// QR-code e-ticket modal. Ticket details are the fan's own; the fixture and
+// venue come from the live FIFA World Cup 2026 feed via `useVenue()` — never a
+// hardcoded match.
+export default function TicketModal({ ticket, venue, onClose }) {
+  if (!ticket) return null
 
   return (
     <div className="ff-modal-overlay" onClick={onClose}>
@@ -8,7 +10,7 @@ export default function TicketModal({ ticket, matchData, onClose }) {
         <div style={{ textAlign: 'center' }}>
           <div style={{
             fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',
-            textTransform: 'uppercase', color: '#6c6c6c', marginBottom: 16,
+            textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 16,
           }}>
             E-Ticket
           </div>
@@ -22,19 +24,19 @@ export default function TicketModal({ ticket, matchData, onClose }) {
             <QRPattern />
           </div>
 
-          <div style={{ fontSize: 11, color: '#6c6c6c', fontFamily: 'monospace', marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: 'var(--faint)', fontFamily: 'monospace', marginBottom: 20 }}>
             {ticket.ticketId}
           </div>
 
           <div style={{
-            height: 1, background: 'rgba(255,255,255,0.1)', margin: '0 -36px 20px',
-            borderTop: '1px dashed rgba(255,255,255,0.15)',
+            height: 1, background: 'var(--line-strong)', margin: '0 -36px 20px',
+            borderTop: '1px dashed var(--line-xstrong)',
           }} />
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, textAlign: 'left' }}>
-            <Detail label="Match" value={`${matchData.homeCode} vs ${matchData.awayCode}`} />
-            <Detail label="Round" value={matchData.round} />
-            <Detail label="Venue" value={matchData.venue} />
+            <Detail label="Match" value={venue?.homeCode && venue?.awayCode ? `${venue.homeCode} vs ${venue.awayCode}` : '—'} />
+            <Detail label="Round" value={venue?.round || '—'} />
+            <Detail label="Venue" value={venue?.venue || 'Resolving…'} />
             <Detail label="Gate" value={`Gate ${ticket.gate}`} />
             <Detail label="Section" value={`Sec ${ticket.section}`} />
             <Detail label="Seat" value={`Row ${ticket.row} · Seat ${ticket.seat}`} />
@@ -44,8 +46,8 @@ export default function TicketModal({ ticket, matchData, onClose }) {
             onClick={onClose}
             style={{
               marginTop: 24, width: '100%', padding: '13px', borderRadius: 32,
-              border: '1px solid rgba(255,255,255,0.2)', background: 'transparent',
-              color: '#f4f4f4', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+              border: '1px solid var(--line-xstrong)', background: 'transparent',
+              color: 'var(--text)', fontSize: 14, fontWeight: 500, cursor: 'pointer',
               fontFamily: 'Hanken Grotesk, sans-serif',
             }}
           >
@@ -60,10 +62,10 @@ export default function TicketModal({ ticket, matchData, onClose }) {
 function Detail({ label, value }) {
   return (
     <div>
-      <div style={{ fontSize: 10, color: '#6c6c6c', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>
+      <div style={{ fontSize: 10, color: 'var(--faint)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>
         {label}
       </div>
-      <div style={{ fontSize: 14, color: '#f4f4f4', fontWeight: 500 }}>{value}</div>
+      <div style={{ fontSize: 14, color: 'var(--text)', fontWeight: 500 }}>{value}</div>
     </div>
   )
 }

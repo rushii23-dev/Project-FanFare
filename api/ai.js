@@ -1,0 +1,136 @@
+// ============================================================
+// FanFare — server-side Gemini proxy.
+//
+// The API key lives ONLY here, in process.env on the server. It is never
+// prefixed with VITE_, so Vite cannot inline it into the client bundle and
+// it can never be extracted from the deployed site.
+//
+// Runs as a Vercel serverless function in production (default export) and
+// is called directly by a Vite middleware in dev (runAI export) so that
+// `npm run dev` behaves identically to production.
+// ============================================================
+
+const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models'
+const DEFAULT_MODEL = 'gemini-2.5-flash'
+
+// The free tier returns transient "model is experiencing high demand" 503s.
+// Mid-match that would read as a broken product, so we retry, then step down
+// to a lighter model that is far less likely to be saturated.
+const FALLBACK_MODEL = 'gemini-2.5-flash-lite'
+const RETRYABLE = new Set([429, 500, 502, 503, 504])
+
+// Hard ceiling so a runaway client can't burn the free-tier quota.
+const MAX_PROMPT_CHARS = 12000
+
+const sleep = ms => new Promise(r => setTimeout(r, ms))
+
+export async function runAI({ system, prompt, json = false, temperature = 0.4 }) {
+  const key = process.env.GEMINI_API_KEY
+  if (!key) {
+    const err = new Error('GEMINI_API_KEY is not set on the server')
+    err.code = 'NO_KEY'
+    throw err
+  }
+  if (typeof prompt !== 'string' || !prompt.trim()) {
+    const err = new Error('prompt is required')
+    err.code = 'BAD_REQUEST'
+    throw err
+  }
+  if (prompt.length > MAX_PROMPT_CHARS) {
+    const err = new Error('prompt too large')
+    err.code = 'BAD_REQUEST'
+    throw err
+  }
+
+  const primary = process.env.GEMINI_MODEL || DEFAULT_MODEL
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature,
+      maxOutputTokens: 2048,
+      // Gemini 2.5 "thinking" tokens are billed against maxOutputTokens. Left on,
+      // they silently eat the budget and the real answer comes back truncated —
+      // which corrupts every JSON response. These are short, grounded, latency-
+      // sensitive matchday calls; they do not need a reasoning budget.
+      thinkingConfig: { thinkingBudget: 0 },
+      ...(json ? { responseMimeType: 'application/json' } : {}),
+    },
+  }
+  if (system) body.systemInstruction = { parts: [{ text: system }] }
+
+  // Try the primary model twice, then step down once. Only transient statuses
+  // are retried — a bad key fails immediately rather than stalling the UI.
+  const attempts = [
+    { model: primary, backoff: 0 },
+    { model: primary, backoff: 700 },
+    { model: FALLBACK_MODEL, backoff: 300 },
+  ]
+
+  let last
+  for (const { model, backoff } of attempts) {
+    if (backoff) await sleep(backoff)
+
+    const r = await fetch(`${ENDPOINT}/${model}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify(body),
+    })
+
+    if (r.ok) {
+      const data = await r.json()
+      const cand = data?.candidates?.[0]
+      const text = cand?.content?.parts?.map(p => p.text).join('') || ''
+
+      // A truncated response is worse than no response: half a JSON object parses
+      // as garbage or throws deep in a component. Fail it here and let the retry
+      // handle it.
+      if (cand?.finishReason === 'MAX_TOKENS') {
+        last = Object.assign(new Error('Gemini response was truncated'), { code: 'TRUNCATED' })
+        continue
+      }
+      if (text) return text
+      last = Object.assign(new Error('Gemini returned an empty response'), { code: 'EMPTY' })
+      continue
+    }
+
+    // Surface the status but never echo the upstream body — it can contain the key.
+    last = Object.assign(new Error(`Gemini request failed (${r.status})`), {
+      code: r.status === 429 ? 'RATE_LIMIT' : r.status === 401 || r.status === 403 ? 'AUTH' : 'UPSTREAM',
+    })
+    if (!RETRYABLE.has(r.status)) throw last
+  }
+  throw last
+}
+
+async function readJsonBody(req) {
+  if (req.body && typeof req.body === 'object') return req.body
+  const chunks = []
+  for await (const c of req) chunks.push(c)
+  const raw = Buffer.concat(chunks).toString('utf8')
+  return raw ? JSON.parse(raw) : {}
+}
+
+export default async function handler(req, res) {
+  // GET is a health probe so the UI can show an honest "AI offline" state
+  // instead of pretending the assistant works.
+  if (req.method === 'GET') {
+    res.status(200).json({ configured: Boolean(process.env.GEMINI_API_KEY) })
+    return
+  }
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' })
+    return
+  }
+
+  try {
+    const { system, prompt, json, temperature } = await readJsonBody(req)
+    const text = await runAI({ system, prompt, json, temperature })
+    res.status(200).json({ text })
+  } catch (e) {
+    const status = e.code === 'NO_KEY' ? 503
+      : e.code === 'BAD_REQUEST' ? 400
+        : e.code === 'RATE_LIMIT' ? 429
+          : 502
+    res.status(status).json({ error: e.message, code: e.code || 'ERROR' })
+  }
+}

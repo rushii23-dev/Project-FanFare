@@ -12,8 +12,17 @@ export const triadSoft = ['rgba(42,165,224,0.16)', 'rgba(47,162,78,0.16)', 'rgba
 export const triadBorder = ['rgba(42,165,224,0.34)', 'rgba(47,162,78,0.34)', 'rgba(226,58,69,0.34)']
 export const triadGhost = ['rgba(42,165,224,0.09)', 'rgba(47,162,78,0.09)', 'rgba(226,58,69,0.09)']
 
-// Role → accent color mapping
-export const roleAccent = { fan: C.blue, staff: C.green, organizer: C.red }
+// Role → accent color mapping (FIFA bright palette; AA on white)
+export const roleAccent = { fan: '#0e9f4f', staff: '#b26a00', organizer: '#e4002b' }
+
+// The venue is NOT hardcoded. It is resolved at runtime from the real FIFA
+// World Cup 2026 feed via `useVenue()` in src/lib/venue.js — whichever stadium
+// the live/next match is actually at. There is deliberately no fallback
+// stadium: a confidently-displayed wrong venue is worse than "resolving…".
+//
+// Kept only as a map centring hint for the brief moment before the real venue
+// geocodes — never shown as a venue name, never fed to the AI.
+export const US_MAP_CENTER = { lat: 39.5, lon: -98.35 }
 
 // ---- Scoreboard trust strip (animated count-up) ----
 export const scoreboard = [
@@ -95,12 +104,8 @@ export const problems = [
   { text: 'A stadium of this size generates enormous waste, and organizers fly blind until it\u2019s too late to act.', accent: '#2aa5e0' },
 ]
 
-export const stats = [
-  { value: '26', accent: '#2aa5e0', label: 'Languages supported in real time, across chat and live translation' },
-  { value: '\u221238%', accent: '#2fa24e', label: 'Reduction in peak gate congestion with AI-guided routing' },
-  { value: '100%', accent: '#e23a45', label: 'Of accessibility requests logged, tracked and routed to a volunteer' },
-  { value: '61%', accent: '#2aa5e0', label: 'Landfill waste diverted through vision-assisted sorting' },
-]
+// Fabricated impact metrics removed \u2014 no unverified numbers on the site.
+export const stats = []
 
 export const commitments = [
   { glyph: '♿', accent: '#2aa5e0', title: 'Accessibility, by default', body: 'Set your needs once \u2014 wheelchair access, sensory-sensitive routes, large-text and audio content \u2014 and every screen adapts. Help is one tap away.' },
@@ -124,24 +129,13 @@ export const roleMeta = { fan: 'a Fan', staff: 'Staff', organizer: 'an Organizer
 // accept/dismiss recommendations. Fan reads crowd/gate data.
 // ============================================================
 
-// ---- Match data (the event everything revolves around) ----
-export const matchData = {
-  homeTeam: 'United States',
-  homeCode: 'USA',
-  homeFlag: '🇺🇸',
-  awayTeam: 'Mexico',
-  awayCode: 'MEX',
-  awayFlag: '🇲🇽',
-  round: 'Group A — Matchday 2',
-  venue: 'MetLife Stadium',
-  city: 'East Rutherford, NJ',
-  // Kickoff set ~2.5 hours in the future from "now" so the countdown always works
-  get kickoff() {
-    const d = new Date()
-    d.setHours(d.getHours() + 2, d.getMinutes() + 30, 0, 0)
-    return d.toISOString()
-  },
-}
+// ---- Match data ----
+// REMOVED (2026-07-12). This used to hardcode "USA vs Mexico at MetLife" with a
+// synthetic kickoff 2.5h in the future. All of it was fabricated.
+//
+// The real fixture — teams, venue, city, kickoff, score, round — now comes from
+// the live FIFA World Cup 2026 feed. Use `useVenue()` from src/lib/venue.js.
+// Do not reintroduce a hardcoded match.
 
 // ---- Fan profile / ticket ----
 export function createFanProfile() {
@@ -149,11 +143,14 @@ export function createFanProfile() {
     name: 'Jordan Rivera',
     email: 'jordan.r@email.com',
     language: 'English',
-    gate: 'C',
-    section: '214',
-    row: '12',
-    seat: '8',
-    ticketId: 'FF-2026-MC02-C214-12-08',
+    // Ticket details are entered by the fan in their dashboard (not at sign-up).
+    // Until confirmed, screens fall back to sensible defaults.
+    gate: '',
+    section: '',
+    row: '',
+    seat: '',
+    ticketId: '',
+    ticketConfirmed: false,
     accessibility: {
       wheelchair: false,
       sensory: false,
@@ -161,161 +158,70 @@ export function createFanProfile() {
       audioContent: false,
     },
     rewards: {
-      points: 320,
-      scans: 7,
-      level: 'Green Champion',
+      points: 0,
+      scans: 0,
+      level: null,
     },
   }
 }
 
-// ---- Zones & gates (shared truth for crowd density) ----
+// ---- Zones & gates (crowd density) ----
+// Empty until a real venue sensor feed is connected. No fabricated data.
 export function createZones() {
-  return [
-    { id: 'A', name: 'Zone A — North Stand', capacity: 12000, current: 9200, trend: [62, 68, 71, 74, 77] },
-    { id: 'B', name: 'Zone B — East Stand', capacity: 14000, current: 8400, trend: [48, 52, 55, 58, 60] },
-    { id: 'C', name: 'Zone C — South Stand', capacity: 12000, current: 10800, trend: [72, 78, 82, 86, 90] },
-    { id: 'D', name: 'Zone D — West Stand', capacity: 14000, current: 7000, trend: [38, 42, 44, 48, 50] },
-    { id: 'E', name: 'Zone E — NW Corner', capacity: 6000, current: 3600, trend: [50, 54, 56, 58, 60] },
-    { id: 'F', name: 'Zone F — SE Corner', capacity: 6000, current: 5100, trend: [68, 72, 78, 82, 85] },
-  ]
+  return []
 }
 
 export function createGates() {
-  return [
-    { id: 'A', zone: 'A', waitMin: 4, density: 68, trend: [3, 4, 5, 4, 4] },
-    { id: 'B', zone: 'A', waitMin: 7, density: 82, trend: [4, 5, 6, 7, 7] },
-    { id: 'C', zone: 'C', waitMin: 12, density: 91, trend: [6, 8, 9, 11, 12] },
-    { id: 'C-2', zone: 'C', waitMin: 3, density: 34, trend: [2, 2, 3, 3, 3], isClosed: true },
-    { id: 'D', zone: 'D', waitMin: 2, density: 42, trend: [2, 2, 2, 2, 2] },
-    { id: 'E', zone: 'B', waitMin: 5, density: 61, trend: [3, 4, 4, 5, 5] },
-    { id: 'F', zone: 'E', waitMin: 3, density: 48, trend: [3, 3, 3, 3, 3] },
-    { id: 'G', zone: 'F', waitMin: 9, density: 78, trend: [5, 6, 7, 8, 9] },
-  ]
+  return []
 }
 
-// ---- Incidents (Staff writes, Organizer reads/triages) ----
+// ---- Incidents (Staff files them → Organizer triages). Starts empty; real
+// incidents are created by staff via the Report Incident screen. ----
 export function createIncidents() {
-  return [
-    {
-      id: 'INC-001', severity: 'high', category: 'medical',
-      title: 'Fan experiencing heat exhaustion',
-      description: 'A fan in Section 214, Row 8 appears to be experiencing heat exhaustion. They are conscious but dizzy. Requesting medical assistance.',
-      location: 'Zone C — Section 214', zone: 'C',
-      status: 'new', assignedTo: null,
-      reportedBy: 'Aiden Park', reportedAt: _ago(12),
-    },
-    {
-      id: 'INC-002', severity: 'medium', category: 'crowd',
-      title: 'Gate C queue backing into concourse',
-      description: 'The queue at Gate C is backing up into the main concourse, partially blocking the east corridor. Crowd density is increasing.',
-      location: 'Gate C — South Concourse', zone: 'C',
-      status: 'assigned', assignedTo: 'Maria Santos',
-      reportedBy: 'James Liu', reportedAt: _ago(25),
-    },
-    {
-      id: 'INC-003', severity: 'low', category: 'facilities',
-      title: 'Restroom 4B out of supplies',
-      description: 'Restroom 4B in the east concourse is low on paper towels and soap. Requires resupply.',
-      location: 'Zone B — East Concourse', zone: 'B',
-      status: 'resolved', assignedTo: 'Carlos Ruiz',
-      reportedBy: 'Aiden Park', reportedAt: _ago(45),
-    },
-    {
-      id: 'INC-004', severity: 'medium', category: 'accessibility',
-      title: 'Wheelchair ramp blocked by vendor cart',
-      description: 'A vendor cart has been parked in front of the wheelchair ramp near Gate E. Needs relocation.',
-      location: 'Gate E — North Stand', zone: 'A',
-      status: 'new', assignedTo: null,
-      reportedBy: 'Maria Santos', reportedAt: _ago(8),
-    },
-  ]
+  return []
 }
 
-// ---- Staff roster / shifts ----
+// ---- Staff roster / shifts (populated when staff accounts are linked) ----
 export function createStaffRoster() {
-  return [
-    { id: 'S1', name: 'Aiden Park', zone: 'C', role: 'Volunteer', status: 'available', shiftStart: _shiftStart(), shiftEnd: _shiftEnd(), tasksCompleted: 4, incidentsFiled: 2 },
-    { id: 'S2', name: 'Maria Santos', zone: 'A', role: 'Security', status: 'available', shiftStart: _shiftStart(), shiftEnd: _shiftEnd(), tasksCompleted: 6, incidentsFiled: 1 },
-    { id: 'S3', name: 'James Liu', zone: 'C', role: 'Volunteer', status: 'on-break', shiftStart: _shiftStart(), shiftEnd: _shiftEnd(), tasksCompleted: 3, incidentsFiled: 1 },
-    { id: 'S4', name: 'Carlos Ruiz', zone: 'B', role: 'Facilities', status: 'available', shiftStart: _shiftStart(), shiftEnd: _shiftEnd(), tasksCompleted: 8, incidentsFiled: 0 },
-    { id: 'S5', name: 'Priya Mehta', zone: 'D', role: 'Medical', status: 'available', shiftStart: _shiftStart(), shiftEnd: _shiftEnd(), tasksCompleted: 2, incidentsFiled: 0 },
-    { id: 'S6', name: 'Fatima Al-Hassan', zone: 'E', role: 'Volunteer', status: 'off-duty', shiftStart: _shiftStart(), shiftEnd: _shiftEnd(), tasksCompleted: 5, incidentsFiled: 3 },
-  ]
+  return []
 }
 
-// ---- Tasks (for Staff portal) ----
+// ---- Tasks (assigned by Operations; none until a real backend exists) ----
 export function createTasks() {
-  return [
-    { id: 'T1', title: 'Check Gate C queue length', zone: 'C', status: 'done', priority: 'high', time: '14:00' },
-    { id: 'T2', title: 'Escort wheelchair user to Section 110', zone: 'A', status: 'in-progress', priority: 'high', time: '14:15' },
-    { id: 'T3', title: 'Restock water station — North Concourse', zone: 'A', status: 'pending', priority: 'medium', time: '14:30' },
-    { id: 'T4', title: 'Verify accessible restroom signage', zone: 'B', status: 'pending', priority: 'low', time: '14:45' },
-    { id: 'T5', title: 'Monitor crowd flow at Gate G entrance', zone: 'F', status: 'pending', priority: 'medium', time: '15:00' },
-    { id: 'T6', title: 'Distribute sensory kits — Family Zone', zone: 'D', status: 'pending', priority: 'medium', time: '15:15' },
-  ]
+  return []
 }
 
-// ---- Notifications (per-role, shared pool) ----
+// ---- Notifications (raised by real events; none until data is flowing) ----
 export function createNotifications() {
-  return [
-    // Fan notifications
-    { id: 'N1', role: 'fan', category: 'gate', title: 'Gate C wait time increasing', body: 'Current wait: 12 min. Gate D is quieter at 2 min.', time: _ago(3), read: false },
-    { id: 'N2', role: 'fan', category: 'match', title: 'Teams warming up', body: 'Both teams are on the pitch for warm-ups. Kickoff in 2h 30m.', time: _ago(15), read: false },
-    { id: 'N3', role: 'fan', category: 'rewards', title: 'You earned 40 points!', body: 'Your last waste scan earned you 40 Green Champion points.', time: _ago(32), read: true },
-    { id: 'N4', role: 'fan', category: 'gate', title: 'Your gate is now open', body: 'Gate C is open for entry. Head to the South Stand.', time: _ago(60), read: true },
-    // Staff notifications
-    { id: 'N5', role: 'staff', category: 'task', title: 'New task assigned', body: 'Escort wheelchair user to Section 110.', time: _ago(5), read: false },
-    { id: 'N6', role: 'staff', category: 'crowd', title: 'Zone C at 90% capacity', body: 'Your assigned zone is nearing capacity. Stay alert.', time: _ago(10), read: false },
-    { id: 'N7', role: 'staff', category: 'incident', title: 'Incident INC-002 assigned', body: 'Gate C queue issue has been assigned to Maria Santos.', time: _ago(20), read: true },
-    // Organizer notifications
-    { id: 'N8', role: 'organizer', category: 'alert', title: 'Gate C trending to capacity', body: 'Gate C projected to reach capacity in ~6 minutes.', time: _ago(2), read: false },
-    { id: 'N9', role: 'organizer', category: 'incident', title: 'New high-severity incident', body: 'INC-001: Fan experiencing heat exhaustion in Section 214.', time: _ago(12), read: false },
-    { id: 'N10', role: 'organizer', category: 'system', title: 'Briefing generated', body: 'New recommendation: Consider opening Gate C-2.', time: _ago(6), read: false },
-  ]
+  return []
 }
 
-// ---- Recommendations / Briefings (Organizer) ----
+// ---- Recommendations / Briefings (generated from live signals) ----
 export function createRecommendations() {
-  return [
-    {
-      id: 'R1', priority: 'high',
-      title: 'Open Gate C-2 to relieve south stand congestion',
-      body: 'Gate C is trending to capacity in approximately 6 minutes. Opening the adjacent Gate C-2 would redistribute roughly 30% of inbound flow and reduce average wait time from 12 min to an estimated 5 min.',
-      status: 'pending', time: _ago(4),
-      impact: { metric: 'Wait time at Gate C', from: '12 min', to: '~5 min' },
-    },
-    {
-      id: 'R2', priority: 'medium',
-      title: 'Deploy two additional volunteers to Zone F',
-      body: 'Zone F (SE Corner) density is at 85% and rising. Current volunteer coverage is below target. Reassigning two volunteers from Zone D (50% density) would improve response capacity.',
-      status: 'pending', time: _ago(18),
-      impact: { metric: 'Zone F coverage', from: '1 volunteer', to: '3 volunteers' },
-    },
-    {
-      id: 'R3', priority: 'low',
-      title: 'Activate overflow parking lot B',
-      body: 'Parking lot A is at 94% capacity. Opening lot B early would prevent congestion at the main vehicle entrance. Estimated impact: 15-minute reduction in post-match exit time.',
-      status: 'accepted', time: _ago(45),
-      impact: { metric: 'Post-match exit time', from: '38 min', to: '~23 min' },
-    },
-    {
-      id: 'R4', priority: 'medium',
-      title: 'Increase water station supply at North Stand',
-      body: 'Temperature is forecast to remain above 28°C through kickoff. Water consumption at North Stand stations is 40% above baseline. Pre-positioning additional supply is recommended.',
-      status: 'dismissed', time: _ago(60),
-      impact: { metric: 'Water availability', from: '~45 min remaining', to: '~2h supply' },
-    },
-  ]
+  return []
 }
 
-// ---- Concierge FAQ (grounded answers for the AI chat) ----
-export const conciergeFAQ = [
-  { q: "Where's the nearest accessible restroom?", a: "The nearest accessible restroom to your seat (Section 214) is Restroom 4C on the South Concourse, about 40 meters from Gate C. It has full wheelchair access and a lowered sink. Source: MetLife Stadium accessibility guide." },
-  { q: "What's the bag policy?", a: "MetLife Stadium enforces a clear-bag policy. Bags must be clear plastic or vinyl, no larger than 12\" × 6\" × 12\". Small clutch purses (4.5\" × 6.5\") are also permitted. No backpacks. Source: MetLife Stadium entry policy." },
-  { q: "Where can I get food near my seat?", a: "The closest food options to Section 214 are: (1) Main Concourse Stand — burgers, hot dogs, nachos (30m south), (2) International Bites — tacos, falafel, noodles (45m east), (3) Green Cart — plant-based options (20m west). All accept contactless payment." },
-  { q: "How do I get to my seat?", a: "From Gate C, follow the South Concourse east for about 60 meters. Take the ramp or stairs up to Level 2. Section 214 is on your left. Row 12 is roughly midway up. Your seat (8) is eighth from the left aisle." },
-  { q: "What time do gates open?", a: "Gates open 3 hours before kickoff. For this match, that means gates opened at the start of the pre-match window. Your assigned gate is Gate C (South Stand)." },
-  { q: "Is there a quiet room?", a: "Yes. The Sensory Room is located on Level 1, Section 101 (North Stand). It offers reduced lighting, sound dampening, and a live match feed. It's available on a first-come basis. Source: MetLife Stadium accessibility services." },
+// ---- Concierge knowledge ----
+// REMOVED (2026-07-12): the old `conciergeFAQ` and `venueFaq` asserted invented
+// facts as truth — "Restroom 4C on the South Concourse", "Sensory Room, Level 1
+// Section 101", "trains from Secaucus Junction". Those were made up, and they
+// were made up about MetLife, which isn't even the venue for most fixtures.
+//
+// No free API publishes stadium interior layouts (Overpass/OSM has essentially
+// nothing for these grounds — verified). So we do not claim to know them.
+//
+// What replaces it: guidance that is TRUE OF STADIUMS IN GENERAL, explicitly
+// framed as general. The AI is instructed to offer it as general advice and to
+// tell the fan to check signage or ask a steward for anything venue-specific —
+// never to assert it as a fact about the ground they are standing in.
+export const generalGuidance = [
+  'Accessible restrooms are normally located beside elevator banks on each level; look for the wheelchair pictogram on the wayfinding signs.',
+  'Most stadiums operate a clear-bag policy at FIFA tournaments, and prohibit glass, outside food and large umbrellas. Check the official listing for this specific ground before you travel.',
+  'Concessions run along every concourse. Free water refill points are usually near the restroom blocks.',
+  'Gates typically open two to three hours before kickoff. Arriving 60–90 minutes early is the usual advice.',
+  'Sensory or quiet rooms are provided at FIFA World Cup venues, but the location differs by ground — ask a steward or check the venue accessibility page.',
+  'For medical help, approach any steward in a hi-vis vest, or go to a First Aid point on the concourse.',
+  'Your seat is found from your gate: enter, take the lift or ramp to your level, then follow the section numbers around the concourse.',
 ]
 
 // ---- Languages supported ----
@@ -327,84 +233,51 @@ export const languages = [
   'Thai', 'Vietnamese',
 ]
 
-// ---- Transport options ----
-export const transportModes = [
-  {
-    id: 'transit', label: 'Transit', icon: '🚇',
-    route: 'NJ Transit — Meadowlands Rail',
-    eta: '35 min from Penn Station',
-    details: 'Trains run every 10 min pre-match. Departs from Secaucus Junction.',
-  },
-  {
-    id: 'rideshare', label: 'Rideshare', icon: '🚗',
-    route: 'Uber/Lyft — Lot K Drop-off',
-    eta: '22 min from Manhattan',
-    details: 'Designated pickup/drop-off in Lot K. Surge pricing likely post-match.',
-  },
-  {
-    id: 'walk', label: 'Walk', icon: '🚶',
-    route: 'Pedestrian Walkway from Lot J',
-    eta: '12 min from parking',
-    details: 'Follow the lit pedestrian path. Wheelchair-accessible route available.',
-  },
-]
+// REMOVED (2026-07-12): `transportModes` hardcoded MetLife/New-Jersey specifics
+// (NJ Transit Meadowlands Rail, Secaucus Junction, Lot K, Penn Station) as if
+// they applied to every fixture. It was already unused. Transport is now driven
+// by the fan's real geocoded origin and the real venue — see FanTransport and
+// src/lib/carbon.js.
 
-// ---- Rewards catalog ----
-export const rewardsCatalog = [
-  { id: 'RW1', name: 'Free matchday drink', points: 100, icon: '🥤' },
-  { id: 'RW2', name: '10% merch discount', points: 200, icon: '👕' },
-  { id: 'RW3', name: 'Priority exit pass', points: 350, icon: '🎫' },
-  { id: 'RW4', name: 'Exclusive digital badge', points: 50, icon: '🏅' },
-]
+// ---- Rewards catalog (empty until a real rewards program is connected) ----
+export const rewardsCatalog = []
 
 // ---- Dashboard navigation definitions ----
 export const fanTabs = [
-  { id: 'fan-dashboard', label: 'Dashboard', icon: '⌂' },
-  { id: 'fan-concierge', label: 'AI Concierge', icon: '💬' },
-  { id: 'fan-map', label: 'Live Map', icon: '🗺' },
-  { id: 'fan-accessibility', label: 'Accessibility', icon: '♿' },
-  { id: 'fan-transport', label: 'Transport', icon: '🚇' },
-  { id: 'fan-notifications', label: 'Notifications', icon: '🔔' },
-  { id: 'fan-profile', label: 'Profile', icon: '👤' },
+  { id: 'fan-dashboard', label: 'Matchday', icon: 'home' },
+  { id: 'fan-concierge', label: 'Assistant', icon: 'chat' },
+  { id: 'fan-map', label: 'Live Map', icon: 'map' },
+  { id: 'fan-accessibility', label: 'Accessibility', icon: 'access' },
+  { id: 'fan-transport', label: 'Transport', icon: 'bus' },
+  { id: 'fan-notifications', label: 'Notifications', icon: 'bell' },
+  { id: 'fan-profile', label: 'Profile', icon: 'user' },
 ]
 
 export const staffTabs = [
-  { id: 'staff-dashboard', label: 'Dashboard', icon: '⌂' },
-  { id: 'staff-tasks', label: 'Tasks', icon: '📋' },
-  { id: 'staff-incident', label: 'Report Incident', icon: '🚨' },
-  { id: 'staff-translation', label: 'Translation', icon: '🌐' },
-  { id: 'staff-zones', label: 'Zone Alerts', icon: '📊' },
-  { id: 'staff-profile', label: 'Profile', icon: '👤' },
+  { id: 'staff-dashboard', label: 'Dashboard', icon: 'home' },
+  { id: 'staff-tasks', label: 'Tasks', icon: 'clipboard' },
+  { id: 'staff-incident', label: 'Report Incident', icon: 'alert' },
+  { id: 'staff-translation', label: 'Translation', icon: 'globe' },
+  { id: 'staff-zones', label: 'Zone Alerts', icon: 'grid' },
+  { id: 'staff-profile', label: 'Profile', icon: 'user' },
 ]
 
 export const organizerTabs = [
-  { id: 'organizer-dashboard', label: 'Dashboard', icon: '⌂' },
-  { id: 'organizer-heatmap', label: 'Heatmap', icon: '🗺' },
-  { id: 'organizer-copilot', label: 'Co-pilot', icon: '🤖' },
-  { id: 'organizer-incidents', label: 'Incidents', icon: '🚨' },
-  { id: 'organizer-briefings', label: 'Briefings', icon: '📋' },
-  { id: 'organizer-analytics', label: 'Analytics', icon: '📈' },
-  { id: 'organizer-team', label: 'Team', icon: '👥' },
+  { id: 'organizer-dashboard', label: 'Command', icon: 'home' },
+  { id: 'organizer-heatmap', label: 'Heatmap', icon: 'map' },
+  { id: 'organizer-copilot', label: 'Ops Query', icon: 'cpu' },
+  { id: 'organizer-incidents', label: 'Incidents', icon: 'alert' },
+  { id: 'organizer-briefings', label: 'Briefings', icon: 'clipboard' },
+  { id: 'organizer-analytics', label: 'Analytics', icon: 'chart' },
+  { id: 'organizer-sustainability', label: 'Footprint', icon: 'leaf' },
+  { id: 'organizer-team', label: 'Team', icon: 'users' },
 ]
 
-// ---- Analytics data (Organizer) ----
-export const analyticsStats = [
-  { value: '67,420', label: 'Current attendance', accent: C.blue, trend: '+2.1%', sparkline: [52, 56, 58, 61, 64, 67] },
-  { value: '−38%', label: 'Congestion vs. baseline', accent: C.green, trend: '−4.2%', sparkline: [62, 55, 48, 44, 40, 38] },
-  { value: '47', label: 'Accessibility requests resolved', accent: C.red, trend: '+12', sparkline: [18, 24, 30, 36, 42, 47] },
-  { value: '61%', label: 'Waste correctly diverted', accent: C.blue, trend: '+3%', sparkline: [42, 48, 52, 55, 58, 61] },
-]
+// REMOVED (2026-07-12): `venueFaq` hardcoded a fictional seat (Section 214,
+// Row 12, Seat 8), a fictional Gate C, and MetLife-specific transport
+// ("Secaucus Junction") — asserted as fact to every fan regardless of their
+// real ticket or the real stadium. See `generalGuidance` above, which is the
+// honest replacement: true of stadiums in general, and labelled as such.
 
-
-// ---- Helper: minutes-ago timestamp ----
-function _ago(min) {
-  return new Date(Date.now() - min * 60000).toISOString()
-}
-function _shiftStart() {
-  const d = new Date(); d.setHours(d.getHours() - 2, 0, 0, 0)
-  return d.toISOString()
-}
-function _shiftEnd() {
-  const d = new Date(); d.setHours(d.getHours() + 4, 0, 0, 0)
-  return d.toISOString()
-}
+// ---- Analytics data (Organizer) — empty until real telemetry is flowing ----
+export const analyticsStats = []

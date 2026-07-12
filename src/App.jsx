@@ -4,6 +4,8 @@ import Nav from './components/Nav.jsx'
 import Landing from './components/Landing.jsx'
 import About from './components/About.jsx'
 import Login from './components/Login.jsx'
+import CreateAccount from './components/CreateAccount.jsx'
+import ScrollBall from './components/ScrollBall.jsx'
 
 // Shared data factories
 import {
@@ -12,6 +14,9 @@ import {
   createIncidents, createStaffRoster, createTasks,
   createNotifications, createRecommendations,
 } from './data.js'
+
+// Simulated venue telemetry (clearly labelled in the UI — see simFeed.js).
+import { useVenueSim } from './lib/simFeed.js'
 
 // Dashboard shell
 import DashboardShell from './components/dashboard/DashboardShell.jsx'
@@ -40,6 +45,7 @@ import OrganizerCopilot from './components/dashboard/organizer/OrganizerCopilot.
 import OrganizerIncidents from './components/dashboard/organizer/OrganizerIncidents.jsx'
 import OrganizerBriefings from './components/dashboard/organizer/OrganizerBriefings.jsx'
 import OrganizerAnalytics from './components/dashboard/organizer/OrganizerAnalytics.jsx'
+import OrganizerSustainability from './components/dashboard/organizer/OrganizerSustainability.jsx'
 import OrganizerTeam from './components/dashboard/organizer/OrganizerTeam.jsx'
 
 export default function App() {
@@ -49,7 +55,16 @@ export default function App() {
   const [activePortal, setActivePortal] = useState(0)
 
   // ── Shared mutable dataset (single source of truth across portals) ──
-  const [fanProfile, setFanProfile] = useState(() => createFanProfile())
+  // Fan profile is seeded from the sign-up details saved in localStorage
+  // (interim persistence; real backend later).
+  const [fanProfile, setFanProfile] = useState(() => {
+    const base = createFanProfile()
+    try {
+      const saved = JSON.parse(localStorage.getItem('ff-user') || 'null')
+      if (saved) return { ...base, ...saved, accessibility: base.accessibility, rewards: base.rewards }
+    } catch { /* ignore */ }
+    return base
+  })
   const [zones, setZones] = useState(() => createZones())
   const [gates, setGates] = useState(() => createGates())
   const [incidents, setIncidents] = useState(() => createIncidents())
@@ -59,6 +74,12 @@ export default function App() {
   const [recommendations, setRecommendations] = useState(() => createRecommendations())
 
   useScrollEffects(screen)
+
+  // Crowd/gate telemetry is driven by the simulator so the AI decision-support
+  // layer has live-shaped signals to reason over. It is labelled SIMULATED FEED
+  // wherever it surfaces. Incidents, tasks and rosters remain genuinely empty —
+  // those are user-generated and are never fabricated.
+  useVenueSim(setZones, setGates)
 
   // ── Navigation helpers ──
   const top = useCallback(() => {
@@ -94,11 +115,25 @@ export default function App() {
     goHome: (e) => { e?.preventDefault?.(); nav('landing') },
     goAbout: (e) => { e?.preventDefault?.(); nav('about') },
     goLogin: (e) => { e?.preventDefault?.(); nav('login') },
+    goRegister: (e) => { e?.preventDefault?.(); nav('register') },
     goHow: (e) => { e?.preventDefault?.(); toSection('how') },
     goPortals: (e) => { e?.preventDefault?.(); toSection('portals') },
     enterAs: (r) => (e) => { e?.preventDefault?.(); setRole(r); nav('login') },
     // Login "Continue as {role}" → go to that role's dashboard
     goDashboard: (r) => {
+      setRole(r)
+      nav(`${r}-dashboard`)
+    },
+    // Sign-up / sign-in with details → seed the fan profile, persist, enter
+    completeAuth: (r, details) => {
+      if (details && Object.keys(details).length) {
+        const patch = { ...details }
+        if (r === 'fan' && details.gate) {
+          patch.ticketId = `FF-2026-${details.gate}${details.section || ''}-${details.row || ''}-${details.seat || ''}`.toUpperCase()
+        }
+        setFanProfile(p => ({ ...p, ...patch }))
+        try { localStorage.setItem('ff-user', JSON.stringify(patch)) } catch { /* ignore */ }
+      }
       setRole(r)
       nav(`${r}-dashboard`)
     },
@@ -138,11 +173,11 @@ export default function App() {
     const goLanding = () => nav('landing')
 
     // ── Fan views ──
-    if (screen === 'fan-dashboard') return <FanDashboard nav={dashNav} fanProfile={fanProfile} zones={zones} gates={gates} />
-    if (screen === 'fan-concierge') return <FanConcierge nav={dashNav} />
+    if (screen === 'fan-dashboard') return <FanDashboard nav={dashNav} fanProfile={fanProfile} zones={zones} gates={gates} onUpdateProfile={setFanProfile} />
+    if (screen === 'fan-concierge') return <FanConcierge nav={dashNav} fanProfile={fanProfile} zones={zones} gates={gates} />
     if (screen === 'fan-map') return <FanMap nav={dashNav} zones={zones} gates={gates} fanProfile={fanProfile} />
-    if (screen === 'fan-accessibility') return <FanAccessibility nav={dashNav} fanProfile={fanProfile} onUpdateProfile={setFanProfile} />
-    if (screen === 'fan-transport') return <FanTransport nav={dashNav} fanProfile={fanProfile} onUpdateProfile={setFanProfile} />
+    if (screen === 'fan-accessibility') return <FanAccessibility nav={dashNav} fanProfile={fanProfile} onUpdateProfile={setFanProfile} zones={zones} gates={gates} />
+    if (screen === 'fan-transport') return <FanTransport nav={dashNav} fanProfile={fanProfile} onUpdateProfile={setFanProfile} gates={gates} />
     if (screen === 'fan-notifications') return <FanNotifications nav={dashNav} notifications={roleNotifs} onMarkRead={markNotifRead} />
     if (screen === 'fan-profile') return <FanProfile nav={dashNav} fanProfile={fanProfile} onUpdateProfile={setFanProfile} onLogout={goLogin} />
 
@@ -159,9 +194,10 @@ export default function App() {
     if (screen === 'organizer-heatmap') return <OrganizerHeatmap nav={dashNav} zones={zones} gates={gates} />
     if (screen === 'organizer-copilot') return <OrganizerCopilot nav={dashNav} zones={zones} gates={gates} />
     if (screen === 'organizer-incidents') return <OrganizerIncidents nav={dashNav} incidents={incidents} staffRoster={staffRoster} onUpdateIncidents={setIncidents} />
-    if (screen === 'organizer-briefings') return <OrganizerBriefings nav={dashNav} recommendations={recommendations} onUpdateRecs={setRecommendations} />
-    if (screen === 'organizer-analytics') return <OrganizerAnalytics nav={dashNav} />
-    if (screen === 'organizer-team') return <OrganizerTeam nav={dashNav} staffRoster={staffRoster} onLogout={goLogin} />
+    if (screen === 'organizer-briefings') return <OrganizerBriefings nav={dashNav} recommendations={recommendations} onUpdateRecs={setRecommendations} zones={zones} gates={gates} />
+    if (screen === 'organizer-analytics') return <OrganizerAnalytics nav={dashNav} zones={zones} gates={gates} incidents={incidents} />
+    if (screen === 'organizer-sustainability') return <OrganizerSustainability nav={dashNav} zones={zones} />
+    if (screen === 'organizer-team' || screen === 'organizer-profile') return <OrganizerTeam nav={dashNav} staffRoster={staffRoster} onLogout={goLogin} />
 
     return null
   }
@@ -170,9 +206,12 @@ export default function App() {
   const tabsMap = { fan: fanTabs, staff: staffTabs, organizer: organizerTabs }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#070707', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: isDashboard ? '#070707' : '#ffffff', overflowX: 'hidden' }}>
       {/* Landing / About / Login get the marketing Nav */}
       {!isDashboard && <Nav handlers={handlers} />}
+
+      {/* Scroll-driven Trionda ball on the long marketing pages */}
+      {(screen === 'landing' || screen === 'about') && <ScrollBall />}
 
       {screen === 'landing' && (
         <Landing
@@ -186,6 +225,10 @@ export default function App() {
 
       {screen === 'login' && (
         <Login handlers={handlers} role={role} setRole={setRole} />
+      )}
+
+      {screen === 'register' && (
+        <CreateAccount handlers={handlers} role={role} setRole={setRole} />
       )}
 
       {/* Dashboard screens get the DashboardShell */}

@@ -1,265 +1,177 @@
-import { useEffect, useRef, useState } from 'react'
-import { BRICOLAGE, HANKEN, ctaWhite } from '../ui.js'
+import { useEffect, useState } from 'react'
+import { BRICOLAGE, HANKEN } from '../ui.js'
+import { Confetti, LightMotes, SunBeam } from './Fx.jsx'
 
-// Hero section — full-viewport looping clip with a "ball hits the net" shake
-// synced to the strike moment (~1.1s), plus a graceful animated fallback
-// when goal.mp4 is missing. Ported from the HERO block in FanFare.dc.html.
+// Hero — the FIFA World Cup 26 stadium photo, brought to life with a slow
+// Ken-Burns push-in, a sweeping stadium sunbeam, rising sunlit motes and a
+// drift of host-nation confetti. Save your photo into /public/assets/ as any of
+// the candidate names below and it is picked up automatically; a bright animated
+// stadium fallback shows until then.
+const HERO_CANDIDATES = [
+  '/assets/hero-stadium.jpg', '/assets/hero-stadium.png', '/assets/hero-stadium.jpeg', '/assets/hero-stadium.webp',
+  '/assets/hero.jpg', '/assets/hero.png', '/assets/stadium.jpg', '/assets/stadium.png',
+]
+
 export default function Hero({ handlers }) {
   const { goLogin, goHow } = handlers
-  const videoRef = useRef(null)
-  const roarRef = useRef(null)
-  const ringRef = useRef(null)
-  const netRef = useRef(null)
-  const [videoOk, setVideoOk] = useState(true)
-
+  // Probe the candidate filenames; use the first that actually loads.
+  const [heroImg, setHeroImg] = useState(null)
   useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-
-    v.muted = true
-    v.playsInline = true
-    v.loop = true
-
-    const triggerHit = () => {
-      const fire = (el, anim) => {
-        if (!el) return
-        el.style.animation = 'none'
-        // force reflow so the animation restarts
-        void el.offsetWidth
-        el.style.animation = anim
-      }
-      fire(roarRef.current, 'ff-hit-text .72s cubic-bezier(.2,.8,.3,1) both')
-      fire(ringRef.current, 'ff-hit-ring .72s ease-out both')
-      fire(netRef.current, 'ff-hit-net .8s ease-out both')
+    let cancelled = false
+    let i = 0
+    const tryNext = () => {
+      if (cancelled || i >= HERO_CANDIDATES.length) return
+      const src = HERO_CANDIDATES[i++]
+      const probe = new Image()
+      probe.onload = () => { if (!cancelled) setHeroImg(src) }
+      probe.onerror = tryNext
+      probe.src = src
     }
-
-    // fire in sync with the video's net-strike
-    const STRIKE = 1.1
-    let armed = true
-    const onTime = () => {
-      const t = v.currentTime
-      if (t < STRIKE - 0.05) armed = true
-      if (armed && t >= STRIKE) {
-        armed = false
-        triggerHit()
-      }
-    }
-    const onError = () => setVideoOk(false)
-
-    v.addEventListener('timeupdate', onTime)
-    v.addEventListener('error', onError, true)
-
-    const p = v.play()
-    if (p && p.catch) p.catch(() => {})
-
-    return () => {
-      v.removeEventListener('timeupdate', onTime)
-      v.removeEventListener('error', onError, true)
-    }
+    tryNext()
+    return () => { cancelled = true }
   }, [])
+  const imgOk = !!heroImg
 
   return (
     <section
       style={{
         position: 'relative',
         height: '100vh',
-        minHeight: 660,
+        minHeight: 680,
         width: '100%',
         overflow: 'hidden',
-        background: '#050505',
+        background: '#bfe6f5',
       }}
     >
-      {/* looping clip (place your goal.mp4 in /public/assets) */}
-      <video
-        ref={videoRef}
-        src="/assets/goal.mp4"
-        muted
-        playsInline
-        preload="auto"
-        onError={() => setVideoOk(false)}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          zIndex: 0,
-          opacity: videoOk ? 1 : 0,
-          transition: 'opacity .6s',
-        }}
-      />
-      {/* animated fallback pitch when the video is absent */}
-      {!videoOk && <FallbackPitch />}
-
-      {/* cinematic grade + legibility overlays */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          background:
-            'linear-gradient(180deg, rgba(5,5,5,0.55) 0%, rgba(5,5,5,0.10) 34%, rgba(5,5,5,0.48) 66%, rgba(5,5,5,0.97) 100%)',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          background:
-            'radial-gradient(135% 115% at 10% 98%, rgba(2,2,2,0.97) 0%, rgba(2,2,2,0.78) 26%, rgba(3,3,3,0.36) 50%, rgba(3,3,3,0) 68%)',
-        }}
-      />
-      <div style={{ position: 'absolute', inset: 0, zIndex: 1, boxShadow: 'inset 0 0 220px rgba(0,0,0,0.75)' }} />
-
-      {/* sweeping light beam */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-20%',
-          left: 0,
-          zIndex: 2,
-          width: '22%',
-          height: '140%',
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent)',
-          filter: 'blur(6px)',
-          animation: 'ff-beam 7s ease-in-out infinite',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* goal-net mesh that ripples on the strike */}
-      <div
-        ref={netRef}
-        style={{
-          position: 'absolute',
-          left: -30,
-          bottom: 0,
-          zIndex: 2,
-          opacity: 0.12,
-          width: 'min(700px,64%)',
-          height: 'min(480px,62vh)',
-          pointerEvents: 'none',
-          backgroundImage:
-            'repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 26px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.5) 0 1px, transparent 1px 26px)',
-          WebkitMaskImage: 'radial-gradient(78% 78% at 24% 84%, #000 0%, transparent 72%)',
-          maskImage: 'radial-gradient(78% 78% at 24% 84%, #000 0%, transparent 72%)',
-        }}
-      />
-
-      {/* content: bottom-left, punchy, in the dark */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          bottom: 0,
-          zIndex: 3,
-          padding: '0 clamp(28px,5vw,60px) 7vh',
-          maxWidth: 560,
-        }}
-      >
-        <span
-          className="ff-rise ff-d1"
+      {/* the stadium photo, slowly pushing in (Ken Burns) */}
+      {imgOk && (
+        <div
           style={{
-            display: 'block',
-            width: 50,
-            height: 3,
-            marginBottom: 18,
-            background: 'linear-gradient(90deg,#2aa5e0 0%,#2fa24e 50%,#e23a45 100%)',
-            boxShadow: '0 0 18px rgba(42,165,224,0.6)',
+            position: 'absolute', inset: 0, zIndex: 0,
+            backgroundImage: `url(${heroImg})`,
+            backgroundSize: 'cover', backgroundPosition: 'center 42%',
+            transformOrigin: 'center 60%',
+            animation: 'ff-kenburns 18s ease-in-out infinite alternate',
+            filter: 'saturate(1.12) contrast(1.03)',
           }}
         />
+      )}
+      {!imgOk && <FallbackStadium />}
+
+      {/* warm sun bloom top-right, echoing the floodlights */}
+      <div
+        style={{
+          position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+          background:
+            'radial-gradient(60% 50% at 78% 12%, rgba(255,240,200,0.5), transparent 60%)',
+          mixBlendMode: 'screen',
+        }}
+      />
+      {/* legibility grade — soft green-ink pooling at the bottom-left, keeps
+          the copy readable without darkening the whole bright frame */}
+      <div
+        style={{
+          position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+          background:
+            'linear-gradient(180deg, rgba(6,40,20,0.12) 0%, rgba(6,40,20,0) 30%, rgba(4,32,16,0.34) 72%, rgba(3,26,13,0.78) 100%)',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+          background:
+            'radial-gradient(120% 110% at 4% 100%, rgba(4,30,15,0.7) 0%, rgba(4,30,15,0.28) 32%, rgba(4,30,15,0) 58%)',
+        }}
+      />
+
+      <SunBeam zIndex={2} />
+      <LightMotes count={26} zIndex={2} color="rgba(255,246,214,0.95)" />
+      <Confetti count={16} zIndex={2} />
+
+      {/* content: bottom-left over the pitch */}
+      <div
+        style={{
+          position: 'absolute', left: 0, bottom: 0, zIndex: 3,
+          padding: '0 clamp(28px,5vw,64px) 8vh', maxWidth: 700,
+        }}
+      >
         <h1
           style={{
-            margin: 0,
-            fontFamily: BRICOLAGE,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            lineHeight: 0.82,
-            letterSpacing: '-0.02em',
+            margin: 0, fontFamily: BRICOLAGE, fontWeight: 700,
+            textTransform: 'uppercase', lineHeight: 0.82, letterSpacing: '-0.02em',
           }}
         >
           <span
             className="ff-rise ff-d2"
             style={{
-              display: 'block',
-              fontFamily: HANKEN,
-              fontWeight: 600,
-              fontSize: 'clamp(11px,1.2vw,15px)',
-              letterSpacing: '0.34em',
-              color: '#cfcfcf',
-              textShadow: '0 2px 20px rgba(0,0,0,0.8)',
-              marginBottom: 12,
+              display: 'block', fontFamily: HANKEN, fontWeight: 600,
+              fontSize: 'clamp(11px,1.2vw,15px)', letterSpacing: '0.34em',
+              color: '#eafff2', textShadow: '0 2px 16px rgba(0,0,0,0.6)', marginBottom: 12,
             }}
           >
-            The 2026 World Cup
+            The 2026 World Cup, in your pocket
           </span>
-          <span style={{ position: 'relative', display: 'inline-block' }}>
+          <span
+            className="ff-rise ff-d2"
+            style={{
+              display: 'block',
+              fontSize: 'clamp(40px,5.4vw,76px)',
+              color: '#ffffff',
+              textShadow: '0 6px 30px rgba(0,0,0,0.5), 0 2px 10px rgba(0,0,0,0.45)',
+              animation: 'ff-impact 1.1s cubic-bezier(.2,.9,.25,1.15) .3s both',
+            }}
+          >
+            Feel the{' '}
             <span
-              ref={roarRef}
+              className="ff-tricolor"
               style={{
-                display: 'block',
-                fontSize: 'clamp(52px,7vw,104px)',
-                background:
-                  'linear-gradient(100deg,#9a9a9a 0%,#d8d8d8 30%,#ffffff 50%,#d8d8d8 70%,#9a9a9a 100%)',
-                backgroundSize: '260% 100%',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
+                backgroundImage: 'linear-gradient(100deg,#7dffb0 0%,#eaff9e 40%,#ffd76a 66%,#ff9db0 100%)',
+                backgroundSize: '220% 100%', WebkitBackgroundClip: 'text', backgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                animation:
-                  'ff-impact 1.1s cubic-bezier(.2,.9,.25,1.15) .3s both, ff-shimmer 5s linear infinite 1.5s, ff-textglow 3.8s ease-in-out infinite 1.5s',
+                filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.35))',
               }}
             >
-              Feel the
-              <br />
-              roar
+              roar.
             </span>
-            <span
-              ref={ringRef}
-              style={{
-                position: 'absolute',
-                left: '82%',
-                top: '76%',
-                zIndex: -1,
-                opacity: 0,
-                width: 150,
-                height: 150,
-                borderRadius: '50%',
-                border: '2px solid rgba(255,255,255,0.55)',
-                pointerEvents: 'none',
-                transform: 'translate(-50%,-50%) scale(0.2)',
-              }}
-            />
           </span>
         </h1>
 
+        <p
+          className="ff-rise ff-d3"
+          style={{
+            fontFamily: HANKEN, fontSize: 'clamp(15px,1.5vw,18px)', lineHeight: 1.5,
+            color: '#eafff3', maxWidth: 420, marginTop: 20, textShadow: '0 2px 14px rgba(0,0,0,0.55)',
+          }}
+        >
+          One platform for every matchday moment — fans, staff and organizers, in sync.
+        </p>
+
         <div
           className="ff-rise ff-d4"
-          style={{ marginTop: 36, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}
+          style={{ marginTop: 34, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}
         >
           <a
             href="#"
             onClick={goLogin}
-            className="ff-cta"
-            style={{ ...ctaWhite, padding: '16px 32px', whiteSpace: 'nowrap' }}
+            className="ff-btn"
+            style={{
+              fontFamily: HANKEN, fontWeight: 700, fontSize: 15, letterSpacing: '0.08em',
+              textTransform: 'uppercase', color: '#ffffff', padding: '17px 34px',
+              borderRadius: 40, whiteSpace: 'nowrap', textShadow: '0 1px 8px rgba(0,0,0,0.35)',
+            }}
           >
             Enter FanFare
           </a>
           <a
             href="#"
             onClick={goHow}
-            className="ff-light ff-outline"
+            className="ff-ghost"
             style={{
-              fontFamily: HANKEN,
-              fontWeight: 500,
-              fontSize: 15,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: '#f4f4f4',
-              border: '1px solid rgba(255,255,255,0.4)',
-              padding: '15px 28px',
-              borderRadius: 32,
-              whiteSpace: 'nowrap',
+              fontFamily: HANKEN, fontWeight: 700, fontSize: 15, letterSpacing: '0.08em',
+              textTransform: 'uppercase', color: '#ffffff',
+              border: '1px solid rgba(255,255,255,0.6)', padding: '16px 30px',
+              borderRadius: 40, whiteSpace: 'nowrap',
+              background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
             }}
           >
             How it works
@@ -270,38 +182,21 @@ export default function Hero({ handlers }) {
       {/* scroll cue */}
       <div
         style={{
-          position: 'absolute',
-          bottom: 26,
-          right: 40,
-          zIndex: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 8,
+          position: 'absolute', bottom: 26, right: 40, zIndex: 3,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
         }}
       >
         <span
           style={{
-            width: 22,
-            height: 36,
-            border: '1px solid rgba(255,255,255,0.4)',
-            borderRadius: 20,
-            position: 'relative',
-            display: 'inline-block',
+            width: 22, height: 36, border: '1px solid rgba(255,255,255,0.7)',
+            borderRadius: 20, position: 'relative', display: 'inline-block',
           }}
         >
           <span
             style={{
-              position: 'absolute',
-              top: 7,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 4,
-              height: 8,
-              borderRadius: 2,
-              background: '#ffffff',
-              boxShadow: '0 0 8px rgba(255,255,255,0.7)',
-              animation: 'ff-scroll 1.8s ease-in-out infinite',
+              position: 'absolute', top: 7, left: '50%', transform: 'translateX(-50%)',
+              width: 4, height: 8, borderRadius: 2, background: '#ffffff',
+              boxShadow: '0 0 8px rgba(255,255,255,0.9)', animation: 'ff-scroll 1.8s ease-in-out infinite',
             }}
           />
         </span>
@@ -310,36 +205,32 @@ export default function Hero({ handlers }) {
   )
 }
 
-// Animated stadium-pitch backdrop shown when goal.mp4 is unavailable.
-function FallbackPitch() {
+// Bright animated stadium fallback (grass + sky + floodlights) shown until
+// hero-stadium.jpg is placed in /public/assets.
+function FallbackStadium() {
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', background: '#060a07' }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
+      {/* sky */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,#8fd4ef 0%,#bfe6f5 34%,#e8f6ef 52%)' }} />
+      {/* pitch */}
       <div
         style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'radial-gradient(120% 90% at 50% 12%, #12341f 0%, #0a1c11 45%, #050505 80%)',
+          position: 'absolute', left: 0, right: 0, bottom: 0, height: '52%',
+          background: 'linear-gradient(180deg,#1fb85c 0%,#0e9f4f 46%,#0a7a3c 100%)',
         }}
       />
       {/* mowed stripes */}
       <div
         style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'repeating-linear-gradient(96deg, rgba(255,255,255,0.03) 0 78px, rgba(255,255,255,0) 78px 156px)',
+          position: 'absolute', left: 0, right: 0, bottom: 0, height: '52%',
+          background: 'repeating-linear-gradient(96deg, rgba(255,255,255,0.06) 0 70px, rgba(0,0,0,0.04) 70px 140px)',
         }}
       />
-      {/* drifting floodlight glow */}
+      {/* floodlight bloom */}
       <div
         style={{
-          position: 'absolute',
-          top: '-30%',
-          left: '30%',
-          width: '60%',
-          height: '150%',
-          background: 'radial-gradient(circle, rgba(120,220,160,0.16), rgba(255,255,255,0) 60%)',
+          position: 'absolute', top: '-20%', left: '30%', width: '60%', height: '90%',
+          background: 'radial-gradient(circle, rgba(255,245,210,0.6), transparent 60%)',
           animation: 'ff-drift 12s ease-in-out infinite',
         }}
       />

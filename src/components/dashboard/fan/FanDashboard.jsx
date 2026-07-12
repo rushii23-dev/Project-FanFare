@@ -1,208 +1,149 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { BRICOLAGE, HANKEN } from '../../ui.js'
-import { matchData, C } from '../../../data.js'
+import Icon from '../../landing/Icons.jsx'
+import { useVenue } from '../../../lib/venue.js'
+import { useWorldCup } from '../../../lib/freeApis.js'
+import PageHead from '../shared/PageHead.jsx'
+import Panel from '../shared/Panel.jsx'
+import DataPending from '../shared/DataPending.jsx'
+import ProgressRing from '../shared/ProgressRing.jsx'
+import Sparkline from '../shared/Sparkline.jsx'
+import WeatherTile from '../shared/WeatherTile.jsx'
+import WorldCupFeed from '../shared/WorldCupFeed.jsx'
 import TicketModal from '../shared/TicketModal.jsx'
 
-// Fan Dashboard Home — "Your matchday at a glance"
-export default function FanDashboard({ nav, fanProfile, zones, gates }) {
+const ACCENT = '#0e9f4f'
+
+export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdateProfile }) {
+  const venue = useVenue()
   const [showTicket, setShowTicket] = useState(false)
-  const [countdown, setCountdown] = useState({ h: 0, m: 0, s: 0 })
+  const confirmed = !!fanProfile.ticketConfirmed
+  const [editTicket, setEditTicket] = useState(!confirmed)
+  const [tForm, setTForm] = useState({ gate: fanProfile.gate, section: fanProfile.section, row: fanProfile.row, seat: fanProfile.seat })
+  const saveTicket = () => {
+    const gate = (tForm.gate || '').trim() || 'C'
+    const section = (tForm.section || '').trim() || '214'
+    const row = (tForm.row || '').trim() || '12'
+    const seat = (tForm.seat || '').trim() || '8'
+    const ticketId = `FF-2026-${gate}${section}-${row}-${seat}`.toUpperCase()
+    onUpdateProfile?.(p => ({ ...p, gate, section, row, seat, ticketId, ticketConfirmed: true }))
+    setEditTicket(false)
+  }
+  const wc = useWorldCup()
+  const featuredCity = wc.fixtures?.[0]?.city || wc.results?.[0]?.city || null
 
-  // Live countdown to kickoff
-  useEffect(() => {
-    const kick = new Date(matchData.kickoff).getTime()
-    const tick = () => {
-      const diff = Math.max(0, kick - Date.now())
-      setCountdown({
-        h: Math.floor(diff / 3600000),
-        m: Math.floor((diff % 3600000) / 60000),
-        s: Math.floor((diff % 60000) / 1000),
-      })
-    }
-    tick()
-    const id = setInterval(tick, 1000)
-    return () => clearInterval(id)
-  }, [])
+  const myGate = gates.find(g => g.id === fanProfile.gate) || gates[0] || null
+  const calmer = myGate ? gates.filter(g => !g.isClosed && g.id !== myGate.id).sort((a, b) => a.waitMin - b.waitMin)[0] : null
+  const myZone = zones.find(z => z.id === fanProfile.gate) || zones[0] || null
+  const zonePct = myZone ? Math.round((myZone.current / myZone.capacity) * 100) : 0
 
-  const myGate = gates.find(g => g.id === fanProfile.gate) || gates[0]
-  const myZone = zones.find(z => z.id === myGate?.zone)
-
-  const quickActions = [
-    { id: 'fan-concierge', icon: '💬', label: 'AI Concierge' },
-    { id: 'fan-map', icon: '🗺', label: 'Live Map' },
-    { id: 'fan-accessibility', icon: '♿', label: 'Accessibility' },
-    { id: 'fan-transport', icon: '🚇', label: 'Transport' },
-    { id: 'fan-notifications', icon: '🔔', label: 'Notifications' },
+  const quick = [
+    { icon: 'chat', label: 'Ask the assistant', to: 'fan-concierge' },
+    { icon: 'map', label: 'Open live map', to: 'fan-map' },
+    { icon: 'access', label: 'Accessibility', to: 'fan-accessibility' },
+    { icon: 'bus', label: 'Plan transport', to: 'fan-transport' },
   ]
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
-      <div style={{ marginBottom: 8 }}>
-        <span style={{
-          fontFamily: HANKEN, fontSize: 11, fontWeight: 600,
-          letterSpacing: '0.15em', textTransform: 'uppercase', color: C.blue,
-        }}>
-          Your matchday at a glance
-        </span>
+    <div>
+      <PageHead eyebrow="Matchday" title={`Good to see you, ${(fanProfile.name || 'Fan').split(' ')[0]}`} subtitle="Your live World Cup 26 hub." />
+
+      <div className="ff-fan-top" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 18, alignItems: 'start' }}>
+        <div className="ff-rise-card ff-st1"><WorldCupFeed data={wc} /></div>
+        <div className="ff-rise-card ff-st2"><WeatherTile city={featuredCity} /></div>
       </div>
 
-      {/* ===== COUNTDOWN HERO ===== */}
-      <div className="ff-dash-card" style={{
-        position: 'relative', overflow: 'hidden', padding: 32, marginBottom: 24,
-        background: 'linear-gradient(135deg, #111111 0%, #0e1a24 100%)',
-        border: '1px solid rgba(42,165,224,0.2)',
-      }}>
-        {/* Glow */}
-        <div style={{
-          position: 'absolute', top: '-40%', right: '-10%', width: '50%', height: '150%',
-          background: 'radial-gradient(circle, rgba(42,165,224,0.12), transparent 65%)',
-          pointerEvents: 'none',
-        }} />
-
-        <div style={{ position: 'relative', display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ flex: 1, minWidth: 280 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <span style={{ fontSize: 32 }}>{matchData.homeFlag}</span>
-              <span style={{
-                fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 28,
-                color: '#f4f4f4', letterSpacing: '-0.01em',
-              }}>
-                {matchData.homeCode}
-              </span>
-              <span style={{ fontSize: 14, color: '#6c6c6c', fontWeight: 500 }}>vs</span>
-              <span style={{
-                fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 28,
-                color: '#f4f4f4', letterSpacing: '-0.01em',
-              }}>
-                {matchData.awayCode}
-              </span>
-              <span style={{ fontSize: 32 }}>{matchData.awayFlag}</span>
+      <div className="ff-fan-mid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18, marginTop: 18 }}>
+        <Panel title="Your ticket" icon="seat" accent={ACCENT} className="ff-rise-card ff-st3"
+          action={confirmed && !editTicket ? (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { setTForm({ gate: fanProfile.gate, section: fanProfile.section, row: fanProfile.row, seat: fanProfile.seat }); setEditTicket(true) }} className="ff-filter-chip">Edit</button>
+              <button onClick={() => setShowTicket(true)} className="ff-filter-chip">View</button>
             </div>
-            <div style={{ fontSize: 14, color: '#9a9a9a', marginBottom: 6 }}>{matchData.round}</div>
-            <div style={{ fontSize: 14, color: '#9a9a9a', marginBottom: 16 }}>
-              {matchData.venue} · {matchData.city}
+          ) : null}>
+          {editTicket ? (
+            <div>
+              {!confirmed && (
+                <div style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 12, lineHeight: 1.45 }}>
+                  Add your ticket so your assistant can guarantee accurate gate, seat and route guidance.
+                </div>
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                {[['Gate', 'gate', 'C'], ['Section', 'section', '214'], ['Row', 'row', '12'], ['Seat', 'seat', '8']].map(([label, key, ph]) => (
+                  <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <span style={{ fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--faint)', fontWeight: 700 }}>{label}</span>
+                    <input value={tForm[key] || ''} onChange={e => setTForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} className="ff-dash-input" style={{ padding: '10px 8px', textAlign: 'center', fontFamily: BRICOLAGE, fontWeight: 700 }} />
+                  </label>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <button onClick={saveTicket} className="ff-btn" style={{ flex: 1, border: 'none', color: '#fff', padding: '11px', borderRadius: 10, fontFamily: HANKEN, fontWeight: 700, fontSize: 13, letterSpacing: '0.04em', cursor: 'pointer' }}>Save ticket</button>
+                {confirmed && <button onClick={() => setEditTicket(false)} className="ff-filter-chip">Cancel</button>}
+              </div>
             </div>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px',
-              background: 'rgba(42,165,224,0.1)', borderRadius: 10,
-              border: '1px solid rgba(42,165,224,0.2)', fontSize: 13, color: '#cfcfcf',
-            }}>
-              🎟️ Gate {fanProfile.gate} · Sec {fanProfile.section} · Row {fanProfile.row} · Seat {fanProfile.seat}
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'center', minWidth: 180 }}>
-            <div style={{ fontSize: 11, color: '#6c6c6c', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 10 }}>
-              Kickoff in
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-              {[
-                { v: countdown.h, l: 'h' },
-                { v: countdown.m, l: 'm' },
-                { v: countdown.s, l: 's' },
-              ].map(u => (
-                <div key={u.l} style={{
-                  background: 'rgba(42,165,224,0.1)', border: '1px solid rgba(42,165,224,0.2)',
-                  borderRadius: 10, padding: '10px 14px', minWidth: 52, textAlign: 'center',
-                }}>
-                  <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 28, color: C.blue }}>
-                    {String(u.v).padStart(2, '0')}
-                  </div>
-                  <div style={{ fontSize: 10, color: '#6c6c6c', textTransform: 'uppercase' }}>{u.l}</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 12px' }}>
+              {[['Gate', fanProfile.gate], ['Section', fanProfile.section], ['Row', fanProfile.row], ['Seat', fanProfile.seat]].map(([k, v]) => (
+                <div key={k}>
+                  <div style={{ fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 3 }}>{k}</div>
+                  <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{v}</div>
                 </div>
               ))}
             </div>
-            <button
-              onClick={() => setShowTicket(true)}
-              className="ff-cta"
-              style={{
-                marginTop: 16, padding: '11px 28px', borderRadius: 32, border: 'none',
-                background: C.blue, color: '#fff', fontFamily: HANKEN, fontWeight: 600,
-                fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
-              }}
-            >
-              View e-ticket
-            </button>
-          </div>
-        </div>
+          )}
+        </Panel>
+
+        <Panel title="Your gate" icon="route" live={!!myGate} accent={ACCENT} className="ff-rise-card ff-st4">
+          {myGate ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 40, lineHeight: 1, color: myGate.waitMin >= 10 ? 'var(--c-red)' : 'var(--text)' }}>{myGate.waitMin}<span style={{ fontSize: 16, color: 'var(--muted)', fontWeight: 600 }}> min</span></div>
+                  <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>wait at Gate {myGate.id}</div>
+                </div>
+                <Sparkline data={myGate.trend} color={ACCENT} width={90} height={40} />
+              </div>
+              {calmer && (
+                <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, background: 'rgba(14,159,79,0.08)', border: '1px solid rgba(14,159,79,0.2)' }}>
+                  <span style={{ color: ACCENT, display: 'inline-flex' }}><Icon name="info" size={16} /></span>
+                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Gate {calmer.id} is calmer — {calmer.waitMin} min</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <DataPending icon="route" title="Gate wait times" message="Add your ticket on the Matchday tab, and your gate's live wait time will show here on matchday." />
+          )}
+        </Panel>
+
+        <Panel title="Your zone" icon="grid" live={!!myZone} accent={ACCENT} className="ff-rise-card ff-st5">
+          {myZone ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+              <ProgressRing value={zonePct} size={92} color={zonePct >= 85 ? '#e4002b' : zonePct >= 65 ? '#c8890a' : ACCENT} sub="full" />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{myZone.name}</div>
+                <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 6 }}>{myZone.current.toLocaleString()} / {myZone.capacity.toLocaleString()}</div>
+                <div style={{ fontSize: 12.5, color: zonePct >= 85 ? 'var(--c-red)' : 'var(--muted)', marginTop: 8 }}>{zonePct >= 85 ? 'Busy — allow extra time' : 'Comfortable flow'}</div>
+              </div>
+            </div>
+          ) : (
+            <DataPending icon="grid" title="Crowd density" message="Add your ticket, and you'll see how busy your stand is here on matchday." />
+          )}
+        </Panel>
       </div>
 
-      {/* ===== QUICK ACTIONS ===== */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-        gap: 12, marginBottom: 24,
-      }}>
-        {quickActions.map(qa => (
-          <button
-            key={qa.id}
-            className="ff-dash-card interactive"
-            onClick={() => nav(qa.id)}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              gap: 8, padding: 20, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.08)',
-              background: '#111111', borderRadius: 14, textAlign: 'center',
-            }}
-          >
-            <span style={{ fontSize: 26 }}>{qa.icon}</span>
-            <span style={{ fontSize: 13, color: '#cfcfcf', fontWeight: 500 }}>{qa.label}</span>
+      <div className="ff-fan-quick" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginTop: 18 }}>
+        {quick.map((q, i) => (
+          <button key={q.to} onClick={() => nav(q.to)} className={`ff-dash-card interactive ff-rise-card ff-st${6 + i}`} style={{ display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', cursor: 'pointer' }}>
+            <span style={{ width: 44, height: 44, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: ACCENT, background: 'rgba(14,159,79,0.1)', border: '1px solid rgba(14,159,79,0.24)', flexShrink: 0 }}>
+              <Icon name={q.icon} size={21} />
+            </span>
+            <span style={{ fontFamily: HANKEN, fontWeight: 700, fontSize: 14.5, color: 'var(--text)' }}>{q.label}</span>
+            <span style={{ marginLeft: 'auto', color: 'var(--faint)', display: 'inline-flex' }}><Icon name="arrow" size={18} /></span>
           </button>
         ))}
       </div>
 
-      {/* ===== LIVE NOW ===== */}
-      <div className="ff-dash-card" style={{ padding: 24 }}>
-        <div style={{
-          fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',
-          textTransform: 'uppercase', color: C.blue, marginBottom: 16,
-          display: 'flex', alignItems: 'center', gap: 8,
-        }}>
-          <span style={{
-            width: 8, height: 8, borderRadius: '50%', background: C.blue,
-            boxShadow: `0 0 8px ${C.blue}`,
-          }} />
-          Live now
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          <div>
-            <div style={{ fontSize: 13, color: '#6c6c6c', marginBottom: 6 }}>Your gate wait time</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 36, color: myGate.waitMin > 8 ? '#e23a45' : '#f4f4f4' }}>
-                {myGate.waitMin}
-              </span>
-              <span style={{ fontSize: 14, color: '#9a9a9a' }}>min at Gate {myGate.id}</span>
-            </div>
-            {myGate.waitMin > 8 && (
-              <div style={{
-                marginTop: 10, padding: '8px 14px', borderRadius: 8,
-                background: 'rgba(47,162,78,0.1)', border: '1px solid rgba(47,162,78,0.2)',
-                fontSize: 13, color: '#2fa24e',
-              }}>
-                💡 Gate D is quieter — 2 min wait
-              </div>
-            )}
-          </div>
-          <div>
-            <div style={{ fontSize: 13, color: '#6c6c6c', marginBottom: 6 }}>Crowd status</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 36, color: '#f4f4f4' }}>
-                {myZone ? Math.round((myZone.current / myZone.capacity) * 100) : '--'}%
-              </span>
-              <span style={{ fontSize: 14, color: '#9a9a9a' }}>
-                {myZone?.name || 'Your zone'}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Ticket modal */}
-      {showTicket && (
-        <TicketModal
-          ticket={fanProfile}
-          matchData={matchData}
-          onClose={() => setShowTicket(false)}
-        />
-      )}
+      {showTicket && <TicketModal ticket={fanProfile} venue={venue} onClose={() => setShowTicket(false)} />}
     </div>
   )
 }

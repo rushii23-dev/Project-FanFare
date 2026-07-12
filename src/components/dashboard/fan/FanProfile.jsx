@@ -1,145 +1,86 @@
-import { useState } from 'react'
 import { BRICOLAGE, HANKEN } from '../../ui.js'
-import { languages, C } from '../../../data.js'
+import Icon from '../../landing/Icons.jsx'
+import { languages } from '../../../data.js'
+import PageHead from '../shared/PageHead.jsx'
+import Panel from '../shared/Panel.jsx'
+import DataPending from '../shared/DataPending.jsx'
+import { toast } from '../shared/Toast.jsx'
 
-// Fan Profile & Settings — editable profile, accessibility sync, language, logout
-export default function FanProfile({ nav, fanProfile, onUpdateProfile, onLogout }) {
-  const [name, setName] = useState(fanProfile.name)
-  const [email, setEmail] = useState(fanProfile.email)
-  const [lang, setLang] = useState(fanProfile.language)
-  const [saved, setSaved] = useState(false)
-  const acc = fanProfile.accessibility
+const ACCENT = '#0e9f4f'
 
-  const handleSave = () => {
-    onUpdateProfile({ ...fanProfile, name, email, language: lang })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
-
-  const togglePref = (key) => {
-    onUpdateProfile({
-      ...fanProfile,
-      accessibility: { ...acc, [key]: !acc[key] },
-    })
-  }
+export default function FanProfile({ fanProfile, onUpdateProfile, onLogout }) {
+  const a = fanProfile.accessibility
+  const activeA11y = Object.entries(a).filter(([, v]) => v).map(([k]) => k)
+  const initials = fanProfile.name.split(' ').map(w => w[0]).join('').toUpperCase()
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto' }}>
-      <button className="ff-breadcrumb" onClick={() => nav('fan-dashboard')}>
-        ← Dashboard
-      </button>
+    <div>
+      <PageHead eyebrow="Profile" title="Your account" subtitle="Manage your details, language and preferences." />
 
-      <h2 style={{
-        fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 28,
-        color: '#f4f4f4', textTransform: 'uppercase', marginBottom: 24,
-      }}>
-        Profile & Settings
-      </h2>
+      <div className="ff-fan-profile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start' }}>
+        <Panel className="ff-rise-card ff-st1" accent={ACCENT}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22 }}>
+            <span style={{ width: 64, height: 64, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 24, background: 'linear-gradient(150deg,#0e9f4f,#0a7a3c)', boxShadow: '0 8px 20px rgba(14,159,79,0.3)' }}>{initials}</span>
+            <div>
+              <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{fanProfile.name}</div>
+              <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 3 }}>{fanProfile.email}</div>
+              {fanProfile.rewards.level && <span className="ff-chip ff-chip-done" style={{ marginTop: 8 }}>{fanProfile.rewards.level}</span>}
+            </div>
+          </div>
+          {fanProfile.ticketConfirmed ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 12px' }}>
+              {[['Ticket ID', fanProfile.ticketId], ['Gate', `Gate ${fanProfile.gate}`], ['Section', fanProfile.section], ['Seat', `Row ${fanProfile.row} · Seat ${fanProfile.seat}`]].map(([k, v]) => (
+                <div key={k}>
+                  <div style={{ fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 4 }}>{k}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', wordBreak: 'break-all' }}>{v}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <DataPending icon="seat" title="No ticket added yet" message="Add your ticket details on the Matchday tab to see your gate, section and seat here." style={{ padding: '24px 12px' }} />
+          )}
+        </Panel>
 
-      {/* Personal info */}
-      <div className="ff-dash-card" style={{ padding: 28, marginBottom: 20 }}>
-        <div style={{
-          fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',
-          textTransform: 'uppercase', color: '#6c6c6c', marginBottom: 20,
-        }}>
-          Personal information
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <label style={{ fontSize: 12, color: '#6c6c6c', display: 'block', marginBottom: 6 }}>
-              Full name
-            </label>
-            <input
-              className="ff-input"
-              value={name}
-              onChange={e => setName(e.target.value)}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, color: '#6c6c6c', display: 'block', marginBottom: 6 }}>
-              Email address
-            </label>
-            <input
-              className="ff-input"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: 12, color: '#6c6c6c', display: 'block', marginBottom: 6 }}>
-              Language preference
-            </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <Panel title="Language" icon="globe" accent={ACCENT} className="ff-rise-card ff-st2">
             <select
-              value={lang}
-              onChange={e => setLang(e.target.value)}
-              style={{
-                width: '100%', background: '#0e0e0e', border: '1px solid #333',
-                color: '#f4f4f4', padding: '14px 18px', borderRadius: 32,
-                fontSize: 15, fontFamily: HANKEN,
-              }}
+              value={fanProfile.language}
+              onChange={e => { onUpdateProfile(p => ({ ...p, language: e.target.value })); toast('Language updated', { accent: ACCENT }) }}
+              className="ff-dash-input"
             >
-              {languages.map(l => <option key={l} value={l}>{l}</option>)}
+              {languages.map(l => <option key={l}>{l}</option>)}
             </select>
-          </div>
-        </div>
+          </Panel>
 
-        <button
-          onClick={handleSave}
-          className="ff-cta"
-          style={{
-            marginTop: 20, padding: '13px 28px', borderRadius: 32, border: 'none',
-            background: saved ? '#2fa24e' : C.blue, color: '#fff', fontFamily: HANKEN,
-            fontWeight: 600, fontSize: 14, cursor: 'pointer', transition: 'background 0.3s',
-            letterSpacing: '0.06em', textTransform: 'uppercase',
-          }}
-        >
-          {saved ? '✓ Saved' : 'Save changes'}
-        </button>
-      </div>
+          <Panel title="Accessibility" icon="access" accent={ACCENT} className="ff-rise-card ff-st3">
+            {activeA11y.length ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {activeA11y.map(k => <span key={k} className="ff-chip ff-chip-progress">{k.replace(/([A-Z])/g, ' $1')}</span>)}
+              </div>
+            ) : (
+              <div style={{ fontSize: 13.5, color: 'var(--muted)' }}>No accessibility preferences set. Configure them in the Accessibility tab.</div>
+            )}
+          </Panel>
 
-      {/* Accessibility profile (same data as FanAccessibility — single source of truth) */}
-      <div className="ff-dash-card" style={{ padding: 28, marginBottom: 20 }}>
-        <div style={{
-          fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',
-          textTransform: 'uppercase', color: '#6c6c6c', marginBottom: 16,
-        }}>
-          Accessibility preferences
-        </div>
-        {Object.entries(acc).map(([key, val]) => (
-          <div key={key} style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.04)',
-          }}>
-            <span style={{ fontSize: 14, color: '#cfcfcf', textTransform: 'capitalize' }}>
-              {key.replace(/([A-Z])/g, ' $1')}
-            </span>
-            <button
-              className={`ff-toggle${val ? ' on' : ''}`}
-              onClick={() => togglePref(key)}
-              aria-label={`${key}: ${val ? 'on' : 'off'}`}
-              role="switch"
-              aria-checked={val}
-            />
-          </div>
-        ))}
-        <div style={{ fontSize: 12, color: '#4a4a4a', marginTop: 12 }}>
-          Changes here sync to your Accessibility Hub automatically.
+          <Panel title="Rewards" icon="star" accent={ACCENT} className="ff-rise-card ff-st4">
+            {fanProfile.rewards.points > 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 30, color: '#c8890a' }}>{fanProfile.rewards.points}</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>Green Champion points · {fanProfile.rewards.scans} scans</div>
+                </div>
+                <span style={{ color: '#c8890a' }}><Icon name="star" size={30} /></span>
+              </div>
+            ) : (
+              <DataPending icon="star" title="No points yet" message="Scan your first item at a venue recycling station and your Green Champion points will start showing up here." style={{ padding: '24px 12px' }} />
+            )}
+          </Panel>
+
+          <button onClick={onLogout} className="ff-dash-card interactive" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: 'pointer', color: 'var(--c-red)', fontFamily: HANKEN, fontWeight: 700, fontSize: 14, letterSpacing: '0.06em', textTransform: 'uppercase', borderColor: 'rgba(228,0,43,0.25)' }}>
+            <Icon name="logout" size={18} /> Log out
+          </button>
         </div>
       </div>
-
-      {/* Log out */}
-      <button
-        onClick={onLogout}
-        style={{
-          width: '100%', padding: '14px', borderRadius: 12,
-          border: '1px solid rgba(226,58,69,0.25)', background: 'rgba(226,58,69,0.04)',
-          color: '#e23a45', fontSize: 14, fontWeight: 500, cursor: 'pointer',
-          fontFamily: HANKEN,
-        }}
-      >
-        Log out
-      </button>
     </div>
   )
 }
