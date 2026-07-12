@@ -72,7 +72,9 @@
   font-weight: 600; cursor: pointer; transition: background .2s, color .2s; text-align: left; width: 100%;
 }
 .ff-sidebar-tab:hover { background: var(--fill-2); color: var(--text); }
-.ff-sidebar-tab.active { background: color-mix(in srgb, var(--ff-accent) 12%, transparent); color: var(--ff-accent); }
+/* 8% pill + text pulled 15% toward black keeps every role's active label at
+   ≥5.5:1 (organizer red only manages 3.9:1 as raw accent on a 12% pill). */
+.ff-sidebar-tab.active { background: color-mix(in srgb, var(--ff-accent) 8%, transparent); color: color-mix(in srgb, var(--ff-accent) 85%, #000); }
 .ff-sidebar-tab.active::before {
   content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px;
   background: var(--ff-accent); box-shadow: 0 0 10px var(--ff-accent);
