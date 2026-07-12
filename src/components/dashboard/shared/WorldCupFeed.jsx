@@ -10,7 +10,7 @@ function Badge({ src, name }) {
 function fmt(ts) {
   const d = new Date(ts.replace(' ', 'T'))
   if (isNaN(d)) return ts
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })  } · ${  d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
 }
 
 function MatchRow({ m, result }) {

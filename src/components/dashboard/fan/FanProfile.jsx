@@ -45,6 +45,7 @@ export default function FanProfile({ fanProfile, onUpdateProfile, onLogout }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <Panel title="Language" icon="globe" accent={ACCENT} className="ff-rise-card ff-st2">
             <select
+              aria-label="Preferred language"
               value={fanProfile.language}
               onChange={e => { onUpdateProfile(p => ({ ...p, language: e.target.value })); toast('Language updated', { accent: ACCENT }) }}
               className="ff-dash-input"
@@ -67,7 +68,7 @@ export default function FanProfile({ fanProfile, onUpdateProfile, onLogout }) {
             {fanProfile.rewards.points > 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 30, color: '#c8890a' }}>{fanProfile.rewards.points}</div>
+                  <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 30, color: '#915700' }}>{fanProfile.rewards.points}</div>
                   <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>Green Champion points · {fanProfile.rewards.scans} scans</div>
                 </div>
                 <span style={{ color: '#c8890a' }}><Icon name="star" size={30} /></span>

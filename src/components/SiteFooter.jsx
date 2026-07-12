@@ -14,7 +14,7 @@ const HOSTS = [
 
 function FootLink({ children, onClick }) {
   return (
-    <a href="#" onClick={onClick} className="ff-foot-link">{children}</a>
+    <button type="button" onClick={onClick} className="ff-linkbtn ff-foot-link">{children}</button>
   )
 }
 

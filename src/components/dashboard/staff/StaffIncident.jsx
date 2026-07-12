@@ -142,12 +142,12 @@ Produce the JSON report.`,
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <Field label="Category">
-                <select value={category} onChange={e => setCategory(e.target.value)} className="ff-dash-input" style={{ textTransform: 'capitalize' }}>
+                <select value={category} onChange={e => setCategory(e.target.value)} aria-label="Incident category" className="ff-dash-input" style={{ textTransform: 'capitalize' }}>
                   {CATS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </Field>
               <Field label="Zone">
-                <select value={zone} onChange={e => setZone(e.target.value)} className="ff-dash-input">
+                <select value={zone} onChange={e => setZone(e.target.value)} aria-label="Incident zone" className="ff-dash-input">
                   {zoneOptions.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
                 </select>
               </Field>

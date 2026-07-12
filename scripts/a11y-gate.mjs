@@ -1,12 +1,12 @@
 // ============================================================
 // FanFare — automated accessibility gate.
 //
-// Serves the production build, drives a real browser through every core
-// screen (landing → login → register → all three role dashboards), runs
-// axe-core against WCAG 2.1 A/AA on each, and exits non-zero on ANY
-// violation. This turns the manual WCAG contrast pass into a permanent,
-// CI-enforced guarantee: a style tweak that regresses contrast or ARIA
-// fails the build instead of shipping.
+// Serves the production build, drives a real browser through EVERY screen —
+// landing → login → register → all three role dashboards → every sidebar tab
+// of each — runs axe-core against WCAG 2.0/2.1/2.2 A+AA on each, and exits
+// non-zero on ANY violation. This turns the manual WCAG contrast pass into a
+// permanent, CI-enforced guarantee: a style tweak that regresses contrast or
+// ARIA on any screen fails the build instead of shipping.
 //
 // External hosts are blocked at the network layer, so the audit also
 // exercises the app's honest offline states and never flakes on a slow
@@ -20,7 +20,7 @@ import { existsSync } from 'node:fs'
 import { preview } from 'vite'
 import { chromium } from 'playwright-core'
 
-const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 
 if (!existsSync(new URL('../dist/index.html', import.meta.url))) {
   console.error('dist/ not found — run `npm run build` first.')
@@ -77,8 +77,10 @@ async function audit(name) {
   console.error(`  FAIL  ${name} — ${result.violations.length} violation(s)`)
   for (const v of result.violations) {
     console.error(`        [${v.impact}] ${v.id}: ${v.help}`)
-    for (const node of v.nodes.slice(0, 5)) {
-      console.error(`          ${node.target.join(' ')}`)
+    for (const node of v.nodes.slice(0, 8)) {
+      const d = node.any?.[0]?.data
+      const detail = d?.fgColor ? `  (${d.fgColor} on ${d.bgColor} = ${d.contrastRatio}:1, needs ${d.expectedContrastRatio})` : ''
+      console.error(`          ${node.target.join(' ')}${detail}`)
     }
   }
 }
@@ -99,6 +101,19 @@ const signIn = async (roleButton, continueLabel) => {
   await page.waitForSelector('nav[aria-label]')
 }
 
+// Walk every sidebar tab of the signed-in dashboard and audit each screen.
+// The sidebar is the role's <nav>; its buttons are the tabs.
+const auditEveryTab = async (roleName) => {
+  const sidebar = page.locator('nav[aria-label] button')
+  const count = await sidebar.count()
+  for (let i = 0; i < count; i++) {
+    const tab = sidebar.nth(i)
+    const label = (await tab.innerText()).trim().replace(/\s+/g, ' ')
+    await tab.click()
+    await audit(`${roleName} › ${label}`)
+  }
+}
+
 try {
   console.log(`Auditing against ${WCAG_TAGS.join(', ')}\n`)
 
@@ -112,13 +127,13 @@ try {
   await audit('login')
 
   await signIn(null, 'Continue as a Fan')
-  await audit('fan dashboard')
+  await auditEveryTab('fan')
 
   await signIn('Staff', 'Continue as Staff')
-  await audit('staff dashboard')
+  await auditEveryTab('staff')
 
   await signIn('Organizer', 'Continue as an Organizer')
-  await audit('organizer dashboard')
+  await auditEveryTab('organizer')
 } finally {
   await browser.close()
   await new Promise(r => server.httpServer.close(r))
@@ -128,4 +143,4 @@ if (totalViolations > 0) {
   console.error(`\n${totalViolations} accessibility violation(s). Failing.`)
   process.exit(1)
 }
-console.log('\nAll screens pass WCAG 2.1 A/AA. ✔')
+console.log('\nEvery screen passes WCAG 2.0/2.1 A+AA and 2.2 AA. ✔')

@@ -169,14 +169,16 @@
   font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
   padding: 4px 11px; border-radius: 20px; white-space: nowrap;
 }
-.ff-chip-pending  { background: rgba(178,106,0,0.12);  color: #9a5b00; }
+/* Amber text is #7d4a00: #9a5b00 was 4.5:1 on white but dips below AA on
+   the tinted chip background (axe-verified). */
+.ff-chip-pending  { background: rgba(178,106,0,0.12);  color: #7d4a00; }
 .ff-chip-progress { background: rgba(26,165,224,0.14);  color: #1673a8; }
 .ff-chip-done     { background: rgba(14,159,79,0.14);   color: #0a7a3c; }
 .ff-chip-new      { background: rgba(228,0,43,0.12);    color: #c30026; }
 .ff-chip-assigned { background: rgba(26,165,224,0.14);  color: #1673a8; }
 .ff-chip-resolved { background: rgba(14,159,79,0.14);   color: #0a7a3c; }
 .ff-chip-high     { background: rgba(228,0,43,0.12);    color: #c30026; }
-.ff-chip-medium   { background: rgba(178,106,0,0.14);   color: #9a5b00; }
+.ff-chip-medium   { background: rgba(178,106,0,0.14);   color: #7d4a00; }
 .ff-chip-low      { background: rgba(14,159,79,0.14);   color: #0a7a3c; }
 
 /* ---------- toggle switch ---------- */

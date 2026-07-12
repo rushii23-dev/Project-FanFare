@@ -22,7 +22,7 @@ const GATE_ZONE = { A: 'N1', B: 'N2', C: 'E1', D: 'S1', E: 'W1', F: 'C1' }
 export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdateProfile }) {
   const venue = useVenue()
   const [showTicket, setShowTicket] = useState(false)
-  const confirmed = !!fanProfile.ticketConfirmed
+  const confirmed = Boolean(fanProfile.ticketConfirmed)
   const [editTicket, setEditTicket] = useState(!confirmed)
   const [tForm, setTForm] = useState({ gate: fanProfile.gate, section: fanProfile.section, row: fanProfile.row, seat: fanProfile.seat })
   const [tErr, setTErr] = useState('')
@@ -108,7 +108,7 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
           )}
         </Panel>
 
-        <Panel title="Your gate" icon="route" live={!!myGate} accent={ACCENT} className="ff-rise-card ff-st4"
+        <Panel title="Your gate" icon="route" live={Boolean(myGate)} accent={ACCENT} className="ff-rise-card ff-st4"
           action={myGate ? <SimBadge /> : null}>
           {myGate ? (
             <>
@@ -131,7 +131,7 @@ export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdatePr
           )}
         </Panel>
 
-        <Panel title="Your zone" icon="grid" live={!!myZone} accent={ACCENT} className="ff-rise-card ff-st5"
+        <Panel title="Your zone" icon="grid" live={Boolean(myZone)} accent={ACCENT} className="ff-rise-card ff-st5"
           action={myZone ? <SimBadge /> : null}>
           {myZone ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>

@@ -21,11 +21,17 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Lint
+      - name: Lint (correctness + static accessibility rules)
         run: npm run lint
 
-      - name: Test
-        run: npm test
+      - name: Type check (strict checkJs over the logic layer)
+        run: npm run typecheck
+
+      - name: Known-vulnerability audit
+        run: npm audit --audit-level=high
+
+      - name: Test with enforced coverage thresholds
+        run: npm run test:coverage
 
       - name: Build
         run: npm run build
@@ -43,5 +49,5 @@ jobs:
       - name: Install Chromium for the accessibility gate
         run: npx playwright@1.49.1 install --with-deps chromium
 
-      - name: Accessibility gate (axe, WCAG 2.1 A/AA, every core screen)
+      - name: Accessibility gate (axe, WCAG 2.1 A/AA + 2.2 AA, every screen)
         run: npm run test:a11y

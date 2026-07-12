@@ -42,7 +42,10 @@ function revealOnScroll(reduce) {
 }
 
 function countScoreboard(reduce) {
-  const wrap = document.getElementById('ff-scorewrap')
+  // _ffCounted is our own once-only marker stashed on the DOM node.
+  const wrap = /** @type {(HTMLElement & { _ffCounted?: boolean }) | null} */ (
+    document.getElementById('ff-scorewrap')
+  )
   if (!wrap || wrap._ffCounted) return
 
   const run = () => {
@@ -50,7 +53,7 @@ function countScoreboard(reduce) {
     wrap._ffCounted = true
     const nums = wrap.querySelectorAll('.ff-score-num')
     nums.forEach((el, i) => {
-      const to = parseFloat(el.getAttribute('data-to')) || 0
+      const to = parseFloat(el.getAttribute('data-to') || '') || 0
       const suffix = el.getAttribute('data-suffix') || ''
       if (reduce) {
         el.textContent = to + suffix

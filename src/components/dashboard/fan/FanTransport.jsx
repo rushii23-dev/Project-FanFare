@@ -338,22 +338,22 @@ Advise this fan.`,
         <Panel title="Currency converter" icon="star" live={rates.live} accent={ACCENT} className="ff-rise-card ff-st4">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <label style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--faint)', fontWeight: 700 }}>Amount</label>
+              <label htmlFor="ff-fx-amount" style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--faint)', fontWeight: 700 }}>Amount</label>
               <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} inputMode="decimal" className="ff-dash-input" style={{ flex: 1 }} />
-                <select value={from} onChange={e => setFrom(e.target.value)} className="ff-dash-input" style={{ width: 90 }}>
+                <input id="ff-fx-amount" value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} inputMode="decimal" className="ff-dash-input" style={{ flex: 1 }} />
+                <select value={from} onChange={e => setFrom(e.target.value)} aria-label="Currency to convert from" className="ff-dash-input" style={{ width: 90 }}>
                   {CURRENCIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--muted)' }}><Icon name="swap" size={18} /></div>
             <div>
-              <label style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--faint)', fontWeight: 700 }}>Converts to</label>
+              <label htmlFor="ff-fx-to" style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--faint)', fontWeight: 700 }}>Converts to</label>
               <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'center' }}>
                 <div className="ff-dash-input" style={{ flex: 1, display: 'flex', alignItems: 'center', fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)', background: 'var(--elev-2)' }}>
                   {converted.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </div>
-                <select value={to} onChange={e => setTo(e.target.value)} className="ff-dash-input" style={{ width: 90 }}>
+                <select id="ff-fx-to" value={to} onChange={e => setTo(e.target.value)} aria-label="Currency to convert to" className="ff-dash-input" style={{ width: 90 }}>
                   {CURRENCIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>

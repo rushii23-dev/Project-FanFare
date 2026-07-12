@@ -53,7 +53,7 @@ describe('stepGates — bounded walk with a closed-gate contract', () => {
   it('a closed gate always reads 0 wait and 0 density', () => {
     let gates = createSimGates()
     for (let i = 0; i < 200; i++) gates = stepGates(gates)
-    for (const g of gates.filter(g => g.isClosed)) {
+    for (const g of gates.filter(x => x.isClosed)) {
       expect(g.waitMin).toBe(0)
       expect(g.density).toBe(0)
     }
@@ -62,7 +62,7 @@ describe('stepGates — bounded walk with a closed-gate contract', () => {
   it('open gates stay within human-plausible bounds after 500 ticks', () => {
     let gates = createSimGates()
     for (let i = 0; i < 500; i++) gates = stepGates(gates)
-    for (const g of gates.filter(g => !g.isClosed)) {
+    for (const g of gates.filter(x => !x.isClosed)) {
       expect(g.waitMin).toBeGreaterThanOrEqual(0)
       expect(g.waitMin).toBeLessThanOrEqual(45)
       expect(g.density).toBeGreaterThanOrEqual(0)

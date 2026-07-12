@@ -176,19 +176,19 @@ export default function About({ handlers }) {
             Ready to walk into the ground?
           </h2>
           <div style={{ position: 'relative', marginTop: 32, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="#" onClick={handlers.goRegister} className="ff-btn" style={{
+            <button type="button" onClick={handlers.goRegister} className="ff-linkbtn ff-btn" style={{
               padding: '17px 34px', borderRadius: 40, fontFamily: HANKEN, fontWeight: 700, fontSize: 15,
               letterSpacing: '0.08em', textTransform: 'uppercase', color: '#ffffff', textShadow: '0 1px 8px rgba(0,0,0,0.3)',
             }}>
               Enter FanFare
-            </a>
-            <a href="#" onClick={handlers.goHome} className="ff-ghost" style={{
+            </button>
+            <button type="button" onClick={handlers.goHome} className="ff-linkbtn ff-ghost" style={{
               fontFamily: HANKEN, fontWeight: 700, fontSize: 15, letterSpacing: '0.08em', textTransform: 'uppercase',
               color: '#ffffff', border: '1px solid rgba(255,255,255,0.6)', padding: '16px 30px', borderRadius: 40,
               background: 'rgba(255,255,255,0.12)',
             }}>
               Back to home
-            </a>
+            </button>
           </div>
         </div>
       </section>

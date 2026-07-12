@@ -1,0 +1,28 @@
+{
+  // Type-checks the LOGIC layer (lib, hooks, API proxy, shared data) via
+  // JSDoc-aware checkJs — no migration, no emit, no runtime change. The JSX
+  // component layer is deliberately out of scope: its safety is covered by
+  // the 127-test suite driving the real <App/>, and checking JSX without
+  // converting to TSX drowns real signal in prop-shape noise.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    // Strict minus noImplicitAny: implicit-any is annotation noise in plain
+    // JS, while null-safety and correct comparisons are real bug-finders.
+    "strict": true,
+    "noImplicitAny": false,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/lib/**/*.js",
+    "src/hooks/**/*.js",
+    "src/data.js",
+    "api/**/*.js"
+  ]
+}

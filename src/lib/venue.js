@@ -47,7 +47,9 @@ async function geocodeStadium(name) {
 export function useVenue() {
   const wc = useLiveWorldCup()
   const m = wc.view
-  const [geo, setGeo] = useState(null)
+  const [geo, setGeo] = useState(
+    /** @type {{ lat: number, lon: number, label?: string } | null} */ (null),
+  )
 
   // The feed gives a venue NAME and city, not coordinates. Resolve them so the
   // map, the weather and the distance maths all point at the real ground.

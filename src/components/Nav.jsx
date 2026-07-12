@@ -46,7 +46,7 @@ export default function Nav({ handlers }) {
         }}
       />
 
-      <a href="#" onClick={goHome} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <button type="button" className="ff-linkbtn" onClick={goHome} aria-label="FanFare home" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <BrandMark size={28} />
         <span
           style={{
@@ -60,22 +60,22 @@ export default function Nav({ handlers }) {
             style={{ WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
           >Fare</span>
         </span>
-      </a>
+      </button>
 
       <div className="ff-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <a href="#" onClick={goHow} className="ff-fnav" style={navLink}>How it works</a>
-        <a href="#" onClick={goPortals} className="ff-fnav" style={navLink}>Portals</a>
-        <a href="#" onClick={goAbout} className="ff-fnav" style={navLink}>Impact</a>
+        <button type="button" onClick={goHow} className="ff-linkbtn ff-fnav" style={navLink}>How it works</button>
+        <button type="button" onClick={goPortals} className="ff-linkbtn ff-fnav" style={navLink}>Portals</button>
+        <button type="button" onClick={goAbout} className="ff-linkbtn ff-fnav" style={navLink}>Impact</button>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <a href="#" onClick={goLogin} className="ff-fnav" style={{ ...navLink, padding: '8px 8px' }}>
+        <button type="button" onClick={goLogin} className="ff-linkbtn ff-fnav" style={{ ...navLink, padding: '8px 8px' }}>
           Log in
-        </a>
-        <a
-          href="#"
+        </button>
+        <button
+          type="button"
           onClick={goRegister}
-          className="ff-btn"
+          className="ff-linkbtn ff-btn"
           style={{
             fontFamily: HANKEN, fontWeight: 700, fontSize: 13.5, letterSpacing: '0.08em',
             textTransform: 'uppercase', color: '#ffffff', padding: '12px 22px',
@@ -83,7 +83,7 @@ export default function Nav({ handlers }) {
           }}
         >
           Enter FanFare
-        </a>
+        </button>
       </div>
     </nav>
   )

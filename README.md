@@ -116,9 +116,11 @@ Open the printed `localhost` URL. That's it.
 ```bash
 npm run build      # production build → dist/
 npm run preview    # preview that build locally
-npm test           # run the test suite (56 tests)
-npm run test:a11y  # WCAG 2.1 A/AA axe audit of every core screen (build first)
-npm run lint       # ESLint over the whole codebase
+npm test           # run the test suite (127 tests)
+npm run test:coverage  # same suite with enforced coverage thresholds
+npm run test:a11y  # WCAG 2.1 A/AA + 2.2 AA axe audit of every screen (build first)
+npm run lint       # ESLint incl. static accessibility (jsx-a11y) rules
+npm run typecheck  # strict TypeScript checkJs over the logic layer
 ```
 
 ---
@@ -129,9 +131,11 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 
 | Check | Command | Result |
 |---|---|---|
-| Tests | `npm test` | **56 tests, 4 suites, all passing** |
-| Accessibility | `npm run build && npm run test:a11y` | **WCAG 2.1 A/AA, zero axe violations on every core screen** — enforced in CI, in a real browser |
-| Lint | `npm run lint` | **0 errors** (react-hooks correctness rules run as errors) |
+| Tests | `npm test` | **127 tests, 10 suites, all passing** |
+| Coverage | `npm run test:coverage` | **thresholds enforced in CI** — a PR that drops coverage fails |
+| Accessibility | `npm run build && npm run test:a11y` | **WCAG 2.1 A/AA + 2.2 AA, zero axe violations on all 24 screens** — every dashboard tab of every role, in a real browser, enforced in CI |
+| Lint | `npm run lint` | **0 errors** (react-hooks correctness + jsx-a11y accessibility rules run as errors) |
+| Types | `npm run typecheck` | **0 errors** — strict `tsc --checkJs` (null-safety on) over `src/lib`, `src/hooks`, `src/data.js` and the API proxy, enforced in CI |
 | Dependency vulnerabilities | `npm audit` | **0 vulnerabilities** |
 | Secret in the client bundle | `grep -r "your key" dist/` | **absent** — the key never leaves the server |
 
@@ -139,7 +143,10 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 - **Carbon arithmetic** — DEFRA factors applied to great-circle distance, checked against an independently known real-world distance
 - **Simulator invariants** — zones can never exceed capacity, closed gates always read zero, the mode split always sums to 1, held over 500 simulated ticks
 - **The AI proxy's failure ladder** — retry on transient errors, step-down to the fallback model, truncated-response rejection, invalid-key mapping, and proof that the API key is scrubbed from every error message it could ever appear in
-- **The real UI, end to end** — the actual `<App/>` is mounted and driven through every user journey: landing → sign-up → login → each of the three role dashboards, with every tab present; login and sign-up provably refuse entry without credentials; the password provably never touches persistent storage; a render crash provably lands in the recovery screen instead of a white page
+- **The real UI, end to end** — the actual `<App/>` is mounted and driven through every user journey: landing → sign-up → login → each of the three role dashboards, then **into every tab of every dashboard** (21 screens); login and sign-up provably refuse entry without credentials; the password provably never touches persistent storage; a render crash provably lands in the recovery screen instead of a white page
+- **Cross-portal behavior, not just rendering** — a staff member files an incident and the test proves it arrives in the organizer's triage queue AND rings their notification bell, then resolves it and watches the counts change; a fan saves a real ticket and the gate/zone panels populate from it (and provably refuse to invent data for a half-filled ticket)
+- **The offline-honesty layer** — every free-API helper (weather, FX, translation, geocoding) and the venue resolver are unit-tested to degrade to an honest fallback, never a fabricated value, when the network fails
+- **The live-feed engine** — the logic that picks which match the score bar features is tested across every phase (in-play with real minute and lead flags, half-time, upcoming, full-time), proves a finished match is never presented as live, filters foreign leagues/seasons, and never invents a score
 - **Rate-limiter integrity under attack** — a blocked IP stays blocked while 5,000+ rotating IPs flood the endpoint; eviction reclaims memory only from under-limit entries
 
 **Security posture:**
@@ -147,11 +154,14 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 - Strict Content-Security-Policy — every external endpoint the app talks to is explicitly allowlisted, **including images** (map tiles and team crests are pinned to their exact hosts; no blanket `https:`); everything else is blocked
 - Standard hardening headers (HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy) plus cross-origin isolation headers (COOP, CORP, X-Permitted-Cross-Domain-Policies)
 - Per-IP rate limiting on the AI endpoint, so a hostile client can't drain the quota — with flood-proof eviction: a rotating-IP attack can exhaust neither memory nor reset an already-blocked IP
-- Prompt size capped server-side; upstream error bodies are never echoed to the client unscrubbed
+- Every client-supplied field is validated server-side: prompt and system blocks are size-capped, the raw request body is capped at 64 KB while streaming (a malformed or oversized body is a 400, never an out-of-memory), sampling temperature is clamped to Gemini's valid range, and AI responses are marked `Cache-Control: no-store`
+- `npm audit` runs in CI at every push; Dependabot files weekly patch PRs
 - Credentials gate every portal: login and sign-up require email and password, and the password is used only for that check — it is **never stored**, not even in `localStorage` (a test proves it)
 
 **Accessibility:**
-- WCAG 2.1 A/AA enforced by an automated axe-core gate (`npm run test:a11y`) that drives a real browser through all six core screens on every CI run — a style tweak that regresses contrast or ARIA fails the build instead of shipping
+- WCAG 2.0/2.1 A+AA **and 2.2 AA** enforced by an automated axe-core gate (`npm run test:a11y`) that drives a real browser through **all 24 screens — every sidebar tab of every role's dashboard** — on every CI run; a style tweak that regresses contrast or ARIA anywhere fails the build instead of shipping
+- Static accessibility linting (`eslint-plugin-jsx-a11y`) catches ARIA and interaction-pattern mistakes at lint time, including in states the browser gate never reaches
+- All in-app navigation is real `<button>` elements (not `href="#"` anchors), modals close on Escape and move focus into the dialog on open, every form control has a programmatic label
 - Skip-to-content link, labelled landmarks, `aria-label`s on icon-only controls, reduced-motion support
 
 **Performance:**

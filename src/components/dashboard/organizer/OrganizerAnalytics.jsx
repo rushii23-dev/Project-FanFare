@@ -111,7 +111,9 @@ Write the analyst's read.`,
   }
 
   const KPIS = [
-    ['Attendance', attendance.toLocaleString(), `${occupancy}% of capacity`, '#2aa5e0'],
+    // #1673a8, not the host-blue #2aa5e0: this is 30px text and the brighter
+    // blue is only 2.8:1 on white (axe-verified failure).
+    ['Attendance', attendance.toLocaleString(), `${occupancy}% of capacity`, '#1673a8'],
     ['Avg gate wait', `${avgWait} min`, `${openGates.length} gates open`, avgWait > 20 ? '#e4002b' : avgWait > 12 ? '#915700' : '#0a7d3e'],
     ['Zones at 85%+', String(hotZones.length), hotZones.length ? hotZones.map(z => z.id).join(', ') : 'all within threshold', hotZones.length ? '#e4002b' : '#0a7d3e'],
     ['Incidents', String(incidents.length), incidents.filter(i => i.status === 'new').length ? `${incidents.filter(i => i.status === 'new').length} unassigned` : 'none open', incidents.length ? '#915700' : '#0a7d3e'],

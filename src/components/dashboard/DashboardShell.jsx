@@ -28,6 +28,17 @@ export default function DashboardShell({
     return () => document.removeEventListener('mousedown', handler)
   }, [showAvatar])
 
+  // Escape dismisses whichever overlay is open — keyboard parity with the
+  // click-away scrim, which only mouse users can reach.
+  useEffect(() => {
+    if (!showNotifs && !showAvatar) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setShowNotifs(false); setShowAvatar(false) }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [showNotifs, showAvatar])
+
   const handleBrandClick = (e) => {
     e.preventDefault()
     if (role === 'fan') onLogout()
@@ -42,7 +53,7 @@ export default function DashboardShell({
       {/* ===== TOP BAR ===== */}
       <header className="ff-topbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <a href="#" onClick={handleBrandClick} style={{ display: 'flex', alignItems: 'center', gap: 10 }} aria-label="Return to home">
+          <button type="button" className="ff-linkbtn" onClick={handleBrandClick} style={{ display: 'flex', alignItems: 'center', gap: 10 }} aria-label="Return to home">
             <BrandMark size={26} animate />
             <span style={{
               fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 20, letterSpacing: '0.02em',
@@ -50,7 +61,7 @@ export default function DashboardShell({
             }}>
               Fan<span className="ff-tricolor" style={{ WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Fare</span>
             </span>
-          </a>
+          </button>
           <span className="ff-role-badge" style={{ borderColor: accent, color: accent, marginLeft: 6 }}>
             {roleLabel}
           </span>
@@ -121,7 +132,13 @@ export default function DashboardShell({
       {/* ===== NOTIFICATION PANEL ===== */}
       {showNotifs && (
         <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 44, background: 'transparent' }} onClick={() => setShowNotifs(false)} />
+          {/* Invisible mouse-only click-away scrim; keyboard users close via
+              Escape (handled above) or the panel's Close button. */}
+          <div
+            aria-hidden="true"
+            style={{ position: 'fixed', inset: 0, zIndex: 44, background: 'transparent' }}
+            onClick={() => setShowNotifs(false)}
+          />
           <NotificationPanel
             notifications={notifications} accent={accent} onMarkRead={onMarkRead}
             onClose={() => setShowNotifs(false)}

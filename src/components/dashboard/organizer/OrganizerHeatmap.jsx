@@ -11,7 +11,8 @@ import Sparkline from '../shared/Sparkline.jsx'
 
 const ACCENT = '#e4002b'
 const pcOf = z => Math.round((z.current / z.capacity) * 100)
-const colOf = p => p >= 85 ? '#e4002b' : p >= 65 ? '#c8890a' : '#0a7d3e'
+// AA-checked as text on white and var(--fill-2) — the old #c8890a amber failed.
+const colOf = p => p >= 85 ? '#e4002b' : p >= 65 ? '#915700' : '#0a7d3e'
 export default function OrganizerHeatmap({ zones, gates }) {
   const venue = useVenue()
   // Only the real ground. The old "Lot D" / "Rail shuttle" pins were invented

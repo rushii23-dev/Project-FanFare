@@ -51,7 +51,7 @@ export default function OrganizerIncidents({ incidents, staffRoster, onUpdateInc
               </div>
               {inc.status !== 'resolved' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, minWidth: 160 }}>
-                  <select defaultValue="" onChange={e => e.target.value && assign(inc.id, e.target.value)} className="ff-dash-input" style={{ padding: '9px 12px', fontSize: 13 }}>
+                  <select defaultValue="" onChange={e => e.target.value && assign(inc.id, e.target.value)} aria-label={`Assign incident ${inc.id} to staff member`} className="ff-dash-input" style={{ padding: '9px 12px', fontSize: 13 }}>
                     <option value="" disabled>Assign to…</option>
                     {staffRoster.filter(s => s.status !== 'off-duty').map(s => <option key={s.id} value={s.name}>{s.name} · {s.role}</option>)}
                   </select>

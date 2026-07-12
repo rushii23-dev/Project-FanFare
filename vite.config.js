@@ -38,6 +38,19 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), aiDevApi(env)],
     server: { open: true },
+    test: {
+      coverage: {
+        provider: 'v8',
+        // Only code that can actually execute in tests is measured: the lib
+        // layer, the API handler, and the components the journey tests mount.
+        include: ['src/**/*.{js,jsx}', 'api/**/*.js'],
+        reporter: ['text', 'html', 'lcov'],
+        // Ratchet, not target: CI fails if coverage ever drops below the
+        // level the suite already proves (st 66.5 / br 51.6 / fn 56.4 / ln
+        // 71.9 as of 2026-07-12). Raise as the suite grows.
+        thresholds: { statements: 64, branches: 49, functions: 54, lines: 69 },
+      },
+    },
     build: {
       // Split the vendor libraries out of the app chunk: react/leaflet change
       // only when we upgrade them, so returning visitors keep them cached

@@ -137,8 +137,9 @@ export default function Portals({ activePortal, setActivePortal, handlers }) {
               const on = i === act
               const rt = FIFA_TRIAD[i % 3]
               return (
-                <div key={p.role} onMouseEnter={() => setActivePortal(i)} onClick={() => setActivePortal(i)}
-                  style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, padding: '20px 20px', borderRadius: 16, cursor: 'pointer',
+                <button type="button" key={p.role} className="ff-linkbtn" aria-pressed={on}
+                  onMouseEnter={() => setActivePortal(i)} onClick={() => setActivePortal(i)}
+                  style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 16, padding: '20px 20px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
                     border: `1px solid ${on ? rt.border : 'rgba(14,159,79,0.12)'}`,
                     background: on ? `linear-gradient(100deg, ${rt.soft}, rgba(255,255,255,0.6))` : '#ffffff',
                     boxShadow: on ? `0 14px 34px ${rt.glow}, inset 3px 0 0 ${rt.c}` : '0 6px 18px rgba(10,60,30,0.05)',
@@ -152,7 +153,7 @@ export default function Portals({ activePortal, setActivePortal, handlers }) {
                     <div style={{ fontFamily: HANKEN, fontWeight: 700, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: on ? rt.c : '#9ab0a2', marginTop: 4, transition: 'color .4s' }}>{p.tag}</div>
                   </div>
                   <span style={{ color: rt.c, opacity: on ? 1 : 0, transition: 'opacity .4s', display: 'inline-flex' }}><Icon name="arrow" size={18} /></span>
-                </div>
+                </button>
               )
             })}
           </div>
@@ -182,11 +183,11 @@ export default function Portals({ activePortal, setActivePortal, handlers }) {
                     </div>
                   ))}
                 </div>
-                <a href="#" onClick={handlers.enterAs(active.role)} className="ff-portalcta"
-                  style={{ marginTop: 28, display: 'inline-flex', alignItems: 'center', gap: 9, fontFamily: HANKEN, fontWeight: 700, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#08210f' }}>
+                <button type="button" onClick={handlers.enterAs(active.role)} className="ff-linkbtn ff-portalcta"
+                  style={{ marginTop: 28, display: 'inline-flex', alignItems: 'center', gap: 9, fontFamily: HANKEN, fontWeight: 700, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#08210f', alignSelf: 'flex-start' }}>
                   {active.cta}
                   <span className="ff-arrow" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: '50%', border: `1px solid ${t.border}`, color: t.c }}><Icon name="arrow" size={16} /></span>
-                </a>
+                </button>
               </div>
 
               {/* live preview */}

@@ -1,12 +1,32 @@
+import { useEffect, useRef } from 'react'
+
 // QR-code e-ticket modal. Ticket details are the fan's own; the fixture and
 // venue come from the live FIFA World Cup 2026 feed via `useVenue()` — never a
 // hardcoded match.
 export default function TicketModal({ ticket, venue, onClose }) {
+  const dialogRef = useRef(null)
+
+  // Real modal keyboard semantics: focus moves into the dialog on open and
+  // Escape dismisses it — parity with the mouse-only backdrop click.
+  useEffect(() => {
+    if (!ticket) return
+    dialogRef.current?.focus()
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [ticket, onClose])
+
   if (!ticket) return null
 
   return (
-    <div className="ff-modal-overlay" onClick={onClose}>
-      <div className="ff-modal" onClick={e => e.stopPropagation()} role="dialog" aria-label="E-Ticket">
+    // Backdrop click closes only when the backdrop itself is the target, so
+    // clicks inside the dialog never dismiss it — no stopPropagation needed.
+    <div
+      className="ff-modal-overlay"
+      role="presentation"
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="ff-modal" role="dialog" aria-modal="true" aria-label="E-Ticket" ref={dialogRef} tabIndex={-1}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
             fontSize: 11, fontWeight: 600, letterSpacing: '0.15em',

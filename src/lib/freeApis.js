@@ -26,7 +26,10 @@ export function weatherMeta(code) {
 // know where the match is, we report no weather rather than the weather
 // somewhere else.
 export function useWeather(lat, lon) {
-  const [state, setState] = useState({ loading: true, live: false, temp: null, feels: null, humidity: null, wind: null, code: null })
+  const [state, setState] = useState(
+    /** @type {{ loading: boolean, live: boolean, temp: number|null, feels: number|null, humidity: number|null, wind: number|null, code: number|null }} */
+    ({ loading: true, live: false, temp: null, feels: null, humidity: null, wind: null, code: null }),
+  )
   useEffect(() => {
     let alive = true
     if (lat == null || lon == null) { setState(s => ({ ...s, loading: false, live: false })); return }
@@ -134,8 +137,8 @@ export function useWorldCup() {
       fetch(`${base}/eventsnextleague.php?id=${WC_LEAGUE}`).then(r => r.json()).catch(() => ({})),
     ]).then(([past, next]) => {
       if (!alive) return
-      const results = (past.events || []).map(normEvent).sort((a, b) => new Date(b.ts) - new Date(a.ts))
-      const fixtures = (next.events || []).map(normEvent).sort((a, b) => new Date(a.ts) - new Date(b.ts))
+      const results = (past.events || []).map(normEvent).sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+      const fixtures = (next.events || []).map(normEvent).sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime())
       const leagueBadge = past.events?.[0]?.strLeagueBadge || next.events?.[0]?.strLeagueBadge || null
       setState({ loading: false, live: results.length > 0 || fixtures.length > 0, results, fixtures, leagueBadge })
     }).catch(() => { if (alive) setState(s => ({ ...s, loading: false })) })
@@ -153,7 +156,7 @@ export async function geocodeCity(name) {
     const j = await r.json()
     const g = j?.results?.[0]
     if (!g) return null
-    return { lat: g.latitude, lon: g.longitude, label: `${g.name}${g.admin1 ? ', ' + g.admin1 : ''}` }
+    return { lat: g.latitude, lon: g.longitude, label: `${g.name}${g.admin1 ? `, ${  g.admin1}` : ''}` }
   } catch { return null }
 }
 
@@ -207,10 +210,14 @@ function pickFeatured(live, fixtures, results) {
   return null
 }
 
-let _wcLiveCache = null   // { at:number, data:object }
+/** @type {{ at: number, data: Record<string, any> } | null} */
+let _wcLiveCache = null
 
+/** @returns {Record<string, any>} feed state plus the derived display `view` */
 export function useLiveWorldCup() {
-  const [state, setState] = useState(() => _wcLiveCache?.data || { loading: true, featured: null, fixtures: [], results: [], live: false, leagueBadge: null })
+  const [state, setState] = useState(() => /** @type {Record<string, any>} */ (
+    _wcLiveCache?.data || { loading: true, featured: null, fixtures: [], results: [], live: false, leagueBadge: null }
+  ))
 
   useEffect(() => {
     let alive = true
@@ -228,8 +235,8 @@ export function useLiveWorldCup() {
           (!e.strSeason || e.strSeason === WC_SEASON)
         const norm = arr => (arr || []).filter(keep).map(normEvent)
 
-        const results = norm(past.events).sort((a, b) => new Date(b.ts) - new Date(a.ts))
-        const fixtures = norm(next.events).sort((a, b) => new Date(a.ts) - new Date(b.ts))
+        const results = norm(past.events).sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+        const fixtures = norm(next.events).sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime())
         const dayEvents = norm(day.events)
         const live = dayEvents
           .filter(e => isLiveStatus(e.status))

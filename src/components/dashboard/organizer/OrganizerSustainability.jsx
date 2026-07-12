@@ -136,7 +136,8 @@ Write the organizer's sustainability briefing.`,
           ['Travel footprint', `${totalT.toFixed(1)} t`, 'CO₂e, round trip', '#e4002b'],
           ['Per fan', `${perFanKg.toFixed(1)} kg`, 'CO₂e each', '#915700'],
           ['Avoided', `${avoidedT.toFixed(1)} t`, 'vs everyone driving alone', ACCENT],
-          ['Attendance', attendance.toLocaleString(), 'fans travelling', '#2aa5e0'],
+          // #1673a8 not #2aa5e0 — same AA-on-white reasoning as OrganizerAnalytics.
+          ['Attendance', attendance.toLocaleString(), 'fans travelling', '#1673a8'],
         ].map(([label, value, sub, col], i) => (
           <div key={label} className={`ff-panel ff-rise-card ff-st${i + 1}`} style={{ padding: '18px 20px' }}>
             <div style={{ fontSize: 10.5, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--faint)', fontWeight: 700 }}>{label}</div>

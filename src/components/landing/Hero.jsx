@@ -30,7 +30,7 @@ export default function Hero({ handlers }) {
     tryNext()
     return () => { cancelled = true }
   }, [])
-  const imgOk = !!heroImg
+  const imgOk = Boolean(heroImg)
 
   return (
     <section
@@ -150,10 +150,10 @@ export default function Hero({ handlers }) {
           className="ff-rise ff-d4"
           style={{ marginTop: 34, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}
         >
-          <a
-            href="#"
+          <button
+            type="button"
             onClick={goRegister}
-            className="ff-btn"
+            className="ff-linkbtn ff-btn"
             style={{
               fontFamily: HANKEN, fontWeight: 700, fontSize: 15, letterSpacing: '0.08em',
               textTransform: 'uppercase', color: '#ffffff', padding: '17px 34px',
@@ -161,11 +161,11 @@ export default function Hero({ handlers }) {
             }}
           >
             Enter FanFare
-          </a>
-          <a
-            href="#"
+          </button>
+          <button
+            type="button"
             onClick={goHow}
-            className="ff-ghost"
+            className="ff-linkbtn ff-ghost"
             style={{
               fontFamily: HANKEN, fontWeight: 700, fontSize: 15, letterSpacing: '0.08em',
               textTransform: 'uppercase', color: '#ffffff',
@@ -175,7 +175,7 @@ export default function Hero({ handlers }) {
             }}
           >
             How it works
-          </a>
+          </button>
         </div>
       </div>
 

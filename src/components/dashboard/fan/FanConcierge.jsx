@@ -82,7 +82,7 @@ export default function FanConcierge({ fanProfile, zones = [], gates = [] }) {
   const [lang, setLang] = useState('en')
   const [messages, setMessages] = useState([{
     role: 'system',
-    text: `Hi${fanProfile?.name ? ' ' + fanProfile.name.split(' ')[0] : ''}! I'm your matchday assistant. ${fanProfile?.ticketConfirmed
+    text: `Hi${fanProfile?.name ? ` ${  fanProfile.name.split(' ')[0]}` : ''}! I'm your matchday assistant. ${fanProfile?.ticketConfirmed
       ? 'I know your ticket and I can see live gate waits, so ask me anything — where your seat is, which gate to use, what the weather will do.'
       : "Add your ticket on your Matchday dashboard and I'll guide you to your exact seat — meanwhile, ask me anything about the venue."} Ask in any language.`,
   }])
@@ -158,7 +158,7 @@ Write the assistant's next reply.`
         action={(
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: 'var(--muted)', display: 'inline-flex' }}><Icon name="globe" size={18} /></span>
-            <select value={lang} onChange={e => setLang(e.target.value)} className="ff-dash-input" style={{ width: 'auto', padding: '9px 12px' }}>
+            <select value={lang} onChange={e => setLang(e.target.value)} aria-label="Answer language" className="ff-dash-input" style={{ width: 'auto', padding: '9px 12px' }}>
               {LANGS.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
             </select>
           </div>

@@ -58,6 +58,25 @@ describe('runAI — input contract', () => {
     await expect(runAI({ prompt: 'x'.repeat(12001) })).rejects.toMatchObject({ code: 'BAD_REQUEST' })
     expect(fetch).not.toHaveBeenCalled()
   })
+
+  it('rejects an oversized or non-string system block', async () => {
+    await expect(runAI({ prompt: 'hi', system: 's'.repeat(8001) })).rejects.toMatchObject({ code: 'BAD_REQUEST' })
+    await expect(runAI({ prompt: 'hi', system: { sneaky: true } })).rejects.toMatchObject({ code: 'BAD_REQUEST' })
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('clamps client-supplied temperature into Gemini\'s [0, 2] range', async () => {
+    fetch.mockResolvedValue(geminiOk('ok'))
+
+    await runAI({ prompt: 'hi', temperature: 999 })
+    expect(JSON.parse(fetch.mock.calls[0][1].body).generationConfig.temperature).toBe(2)
+
+    await runAI({ prompt: 'hi', temperature: -5 })
+    expect(JSON.parse(fetch.mock.calls[1][1].body).generationConfig.temperature).toBe(0)
+
+    await runAI({ prompt: 'hi', temperature: 'not-a-number' })
+    expect(JSON.parse(fetch.mock.calls[2][1].body).generationConfig.temperature).toBe(0.4)
+  })
 })
 
 describe('runAI — happy path', () => {
@@ -160,6 +179,42 @@ describe('handler — HTTP contract', () => {
     res = makeRes()
     await handler(post('10.0.0.2', { prompt: '' }), res)
     expect(res.statusCode).toBe(400)
+  })
+
+  it('rejects a streamed body over the size cap with 400, not an out-of-memory 502', async () => {
+    // A raw request (no pre-parsed body) that streams 65KB of zeros.
+    const req = {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.66' },
+      async *[Symbol.asyncIterator]() {
+        for (let i = 0; i < 65; i++) yield Buffer.alloc(1024, '0')
+      },
+    }
+    const res = makeRes()
+    await handler(req, res)
+    expect(res.statusCode).toBe(400)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects a malformed JSON body with 400, not a 502', async () => {
+    const req = {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '10.0.0.67' },
+      async *[Symbol.asyncIterator]() { yield Buffer.from('{not json') },
+    }
+    const res = makeRes()
+    await handler(req, res)
+    expect(res.statusCode).toBe(400)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('marks POST responses no-store so per-fan answers are never cached', async () => {
+    fetch.mockResolvedValue(geminiOk('ok'))
+    const headers = {}
+    const res = makeRes()
+    res.setHeader = (k, v) => { headers[k] = v }
+    await handler(post('10.0.0.68'), res)
+    expect(headers['Cache-Control']).toBe('no-store')
   })
 
   it('rate-limits the 21st request in a minute from one IP with a 429', async () => {

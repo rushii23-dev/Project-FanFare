@@ -97,14 +97,14 @@ export default function Login({ handlers, role, setRole }) {
 
       <p className="ff-fieldin ff-fi6" style={{ textAlign: 'center', fontSize: 14, color: '#4a6555', marginTop: 22 }}>
         New here?{' '}
-        <a href="#" onClick={handlers.goRegister} style={{ color: activeT.c, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+        <button type="button" className="ff-linkbtn" onClick={handlers.goRegister} style={{ color: activeT.c, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>
           Create an account
-        </a>
+        </button>
       </p>
       <div className="ff-fieldin ff-fi6" style={{ textAlign: 'center', marginTop: 18 }}>
-        <a href="#" onClick={handlers.goHome} style={{ fontSize: 14, color: '#6a8574' }}>
+        <button type="button" className="ff-linkbtn" onClick={handlers.goHome} style={{ fontSize: 14, color: '#6a8574' }}>
           ← Back to home
-        </a>
+        </button>
       </div>
     </AuthShell>
   )

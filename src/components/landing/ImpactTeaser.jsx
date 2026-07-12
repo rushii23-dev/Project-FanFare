@@ -160,19 +160,20 @@ export default function ImpactTeaser({ handlers }) {
                 style={{ width: 46, height: 46, objectFit: 'contain', animation: 'ff-float 4.2s ease-in-out infinite', filter: 'drop-shadow(0 10px 16px rgba(0,30,14,0.5))' }}
               />
             ) : null}
-            <a
-              href="#"
+            <button
+              type="button"
               onClick={handlers.goAbout}
-              className="ff-btn"
+              className="ff-linkbtn ff-btn"
               style={{
                 padding: '16px 34px', borderRadius: 40, fontFamily: HANKEN, fontWeight: 700, fontSize: 14.5,
                 letterSpacing: '0.08em', textTransform: 'uppercase', color: '#ffffff', textShadow: '0 1px 8px rgba(0,0,0,0.3)',
               }}
             >
               Explore our impact
-            </a>
-            <a
-              href="#"
+            </button>
+            <button
+              type="button"
+              className="ff-linkbtn"
               onClick={handlers.goHow}
               style={{
                 fontFamily: HANKEN, fontWeight: 700, fontSize: 14.5, letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -183,7 +184,7 @@ export default function ImpactTeaser({ handlers }) {
               onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.34)' }}
             >
               See how it works
-            </a>
+            </button>
           </div>
         </div>
       </div>

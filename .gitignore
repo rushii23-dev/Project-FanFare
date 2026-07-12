@@ -2,6 +2,7 @@ node_modules
 dist
 dist-ssr
 .vite
+coverage
 
 # Secrets. *.local covers .env.local, which holds the real GEMINI_API_KEY.
 # Never remove this rule.

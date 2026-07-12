@@ -7,7 +7,10 @@ import CapacityGauge from '../shared/CapacityGauge.jsx'
 import Sparkline from '../shared/Sparkline.jsx'
 
 const ACCENT = '#915700'
-function status(pct) { return pct >= 85 ? ['Packed', '#e4002b'] : pct >= 65 ? ['Busy', '#c8890a'] : ['Calm', '#0a7d3e'] }
+// Status colors are AA-checked as text on the chip's own 14% tint (which is
+// stricter than white: #0a7d3e passes white at 5.2:1 but fails its tint at
+// 4.3:1). Don't brighten these without re-running the a11y gate.
+function status(pct) { return pct >= 85 ? ['Packed', '#c30026'] : pct >= 65 ? ['Busy', '#915700'] : ['Calm', '#0a6e37'] }
 
 export default function StaffZones({ zones }) {
   const alerts = zones.filter(z => (z.current / z.capacity) >= 0.85)

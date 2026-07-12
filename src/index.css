@@ -277,6 +277,16 @@ button { font-family: inherit; }
 }
 .ff-gborder:hover::before { opacity: 1; }
 
+/* ---------- button reset for SPA "link" actions ----------
+   In-app navigation changes state, not URL — semantically a button, not a
+   link. This strips the UA button chrome so a real <button> can wear any
+   link/CTA style, keeping keyboard + screen-reader semantics correct. */
+.ff-linkbtn {
+  background: none; border: none; padding: 0; margin: 0;
+  font: inherit; color: inherit; text-align: inherit;
+  cursor: pointer; -webkit-appearance: none; appearance: none;
+}
+
 /* ---------- primary pitch CTA ---------- */
 .ff-btn { position: relative; overflow: hidden; isolation: isolate; transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .45s; }
 .ff-btn::before { content: ''; position: absolute; inset: 0; z-index: -2; background: linear-gradient(100deg, #0a7a3c, #0e9f4f, #f5b301, #0a7a3c); background-size: 220% 100%; animation: ff-grad-pan 6s linear infinite; }

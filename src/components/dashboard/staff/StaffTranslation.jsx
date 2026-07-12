@@ -122,8 +122,8 @@ Produce the JSON.`,
     window.speechSynthesis.speak(u)
   }
 
-  const LangSelect = ({ value, onChange }) => (
-    <select value={value} onChange={e => onChange(e.target.value)} className="ff-dash-input" style={{ width: 'auto', fontWeight: 700, padding: '10px 14px' }}>
+  const LangSelect = ({ value, onChange, label }) => (
+    <select value={value} onChange={e => onChange(e.target.value)} aria-label={label} className="ff-dash-input" style={{ width: 'auto', fontWeight: 700, padding: '10px 14px' }}>
       {LANGS.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
     </select>
   )
@@ -150,9 +150,9 @@ Produce the JSON.`,
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 16 }}>
-        <LangSelect value={from} onChange={setFrom} />
+        <LangSelect value={from} onChange={setFrom} label="Translate from" />
         <button onClick={swap} className="ff-icon-btn" aria-label="Swap languages"><Icon name="swap" size={20} /></button>
-        <LangSelect value={to} onChange={setTo} />
+        <LangSelect value={to} onChange={setTo} label="Translate to" />
       </div>
 
       {error && (

@@ -19,8 +19,12 @@ const DEFAULT_MODEL = 'gemini-2.5-flash'
 const FALLBACK_MODEL = 'gemini-2.5-flash-lite'
 const RETRYABLE = new Set([429, 500, 502, 503, 504])
 
-// Hard ceiling so a runaway client can't burn the free-tier quota.
+// Hard ceilings so a runaway client can't burn the free-tier quota or the
+// lambda's memory. The system block is ours (venue facts + instructions) and
+// is smaller than the user prompt by design.
 const MAX_PROMPT_CHARS = 12000
+const MAX_SYSTEM_CHARS = 8000
+const MAX_BODY_BYTES = 64 * 1024
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
@@ -28,39 +32,49 @@ const sleep = ms => new Promise(r => setTimeout(r, ms))
 // it is never allowed to reach a browser if it somehow does.
 const scrub = (text, key) => (key ? text.split(key).join('***') : text)
 
+/** @typedef {Error & { code?: string }} CodedError */
+/** @returns {CodedError} */
+const codedError = (message, code) => Object.assign(new Error(message), { code })
+
+/**
+ * Everything in the request is client-controlled and therefore untrusted —
+ * typed unknown so the validation below is the only path to use.
+ * @param {{ system?: unknown, prompt?: unknown, json?: unknown, temperature?: unknown }} req
+ */
 export async function runAI({ system, prompt, json = false, temperature = 0.4 }) {
   const key = process.env.GEMINI_API_KEY
-  if (!key) {
-    const err = new Error('GEMINI_API_KEY is not set on the server')
-    err.code = 'NO_KEY'
-    throw err
-  }
+  if (!key) throw codedError('GEMINI_API_KEY is not set on the server', 'NO_KEY')
   if (typeof prompt !== 'string' || !prompt.trim()) {
-    const err = new Error('prompt is required')
-    err.code = 'BAD_REQUEST'
-    throw err
+    throw codedError('prompt is required', 'BAD_REQUEST')
   }
   if (prompt.length > MAX_PROMPT_CHARS) {
-    const err = new Error('prompt too large')
-    err.code = 'BAD_REQUEST'
-    throw err
+    throw codedError('prompt too large', 'BAD_REQUEST')
   }
+  if (system != null && (typeof system !== 'string' || system.length > MAX_SYSTEM_CHARS)) {
+    throw codedError('system block invalid or too large', 'BAD_REQUEST')
+  }
+
+  // Client-supplied sampling settings are suggestions, not commands: anything
+  // non-numeric or out of Gemini's [0, 2] range is clamped, never forwarded.
+  const temp = Number.isFinite(Number(temperature))
+    ? Math.min(2, Math.max(0, Number(temperature)))
+    : 0.4
 
   const primary = process.env.GEMINI_MODEL || DEFAULT_MODEL
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
-      temperature,
+      temperature: temp,
       maxOutputTokens: 2048,
       // Gemini 2.5 "thinking" tokens are billed against maxOutputTokens. Left on,
       // they silently eat the budget and the real answer comes back truncated —
       // which corrupts every JSON response. These are short, grounded, latency-
       // sensitive matchday calls; they do not need a reasoning budget.
       thinkingConfig: { thinkingBudget: 0 },
-      ...(json ? { responseMimeType: 'application/json' } : {}),
+      ...(json === true || json === 'true' ? { responseMimeType: 'application/json' } : {}),
     },
+    ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
   }
-  if (system) body.systemInstruction = { parts: [{ text: system }] }
 
   // Try the primary model twice, then step down once. Only transient statuses
   // are retried — a bad key fails immediately rather than stalling the UI.
@@ -116,9 +130,23 @@ export async function runAI({ system, prompt, json = false, temperature = 0.4 })
 async function readJsonBody(req) {
   if (req.body && typeof req.body === 'object') return req.body
   const chunks = []
-  for await (const c of req) chunks.push(c)
+  let bytes = 0
+  for await (const c of req) {
+    bytes += c.length
+    // Stop reading the moment the body exceeds the cap — buffering an
+    // arbitrarily large upload is a memory DoS, prompt limits or not.
+    if (bytes > MAX_BODY_BYTES) {
+      throw codedError('request body too large', 'BAD_REQUEST')
+    }
+    chunks.push(c)
+  }
   const raw = Buffer.concat(chunks).toString('utf8')
-  return raw ? JSON.parse(raw) : {}
+  try {
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    // A malformed body is the caller's error (400), not an upstream 502.
+    throw codedError('request body is not valid JSON', 'BAD_REQUEST')
+  }
 }
 
 // Per-IP sliding-window rate limit. In-memory, so it is per warm lambda
@@ -158,6 +186,11 @@ function rateLimited(ip) {
 }
 
 export default async function handler(req, res) {
+  // Generated answers are per-request and may embed per-fan context — no
+  // intermediary may cache them. (Optional call: the dev middleware and the
+  // test harness pass a minimal res.)
+  res.setHeader?.('Cache-Control', 'no-store')
+
   // GET is a health probe so the UI can show an honest "AI offline" state
   // instead of pretending the assistant works.
   if (req.method === 'GET') {
@@ -180,10 +213,11 @@ export default async function handler(req, res) {
     const text = await runAI({ system, prompt, json, temperature })
     res.status(200).json({ text })
   } catch (e) {
-    const status = e.code === 'NO_KEY' ? 503
-      : e.code === 'BAD_REQUEST' ? 400
-        : e.code === 'RATE_LIMIT' ? 429
+    const err = /** @type {CodedError} */ (e)
+    const status = err.code === 'NO_KEY' ? 503
+      : err.code === 'BAD_REQUEST' ? 400
+        : err.code === 'RATE_LIMIT' ? 429
           : 502
-    res.status(status).json({ error: e.message, code: e.code || 'ERROR' })
+    res.status(status).json({ error: err.message, code: err.code || 'ERROR' })
   }
 }
