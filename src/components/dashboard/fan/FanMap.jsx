@@ -9,7 +9,7 @@ import StadiumMap from '../shared/StadiumMap.jsx'
 import VenueMap from '../shared/VenueMap.jsx'
 import Sparkline from '../shared/Sparkline.jsx'
 
-const ACCENT = '#0e9f4f'
+const ACCENT = '#0a7d3e'
 
 export default function FanMap({ zones, gates, fanProfile }) {
   const venue = useVenue()
@@ -22,7 +22,7 @@ export default function FanMap({ zones, gates, fanProfile }) {
   // coordinates and are gone; we do not know the transport nodes for an
   // arbitrary World Cup ground and will not pretend to.
   const cityMarkers = venue.resolved
-    ? [{ lat: venue.lat, lon: venue.lon, label: venue.venue, color: '#0e9f4f' }]
+    ? [{ lat: venue.lat, lon: venue.lon, label: venue.venue, color: '#0a7d3e' }]
     : []
 
   return (
@@ -46,7 +46,7 @@ export default function FanMap({ zones, gates, fanProfile }) {
               <>
                 <StadiumMap zones={zones} gates={gates} accent={ACCENT} highlightGate={sel} onGateClick={setSel} />
                 <div style={{ display: 'flex', gap: 18, justifyContent: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-                  {[['Calm', '#0e9f4f'], ['Busy', '#c8890a'], ['Packed', '#e4002b']].map(([l, c]) => (
+                  {[['Calm', '#0a7d3e'], ['Busy', '#c8890a'], ['Packed', '#e4002b']].map(([l, c]) => (
                     <span key={l} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12.5, color: 'var(--muted)' }}>
                       <span style={{ width: 11, height: 11, borderRadius: 4, background: c }} /> {l}
                     </span>

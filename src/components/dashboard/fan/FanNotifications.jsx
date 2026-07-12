@@ -3,7 +3,7 @@ import Icon from '../../landing/Icons.jsx'
 import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 
-const ACCENT = '#0e9f4f'
+const ACCENT = '#0a7d3e'
 const CAT_ICON = { gate: 'route', match: 'star', rewards: 'star', incident: 'alert', system: 'info', task: 'clipboard', crowd: 'grid', alert: 'alert' }
 
 function timeAgo(iso) {

@@ -112,9 +112,9 @@ Write the analyst's read.`,
 
   const KPIS = [
     ['Attendance', attendance.toLocaleString(), `${occupancy}% of capacity`, '#2aa5e0'],
-    ['Avg gate wait', `${avgWait} min`, `${openGates.length} gates open`, avgWait > 20 ? '#e4002b' : avgWait > 12 ? '#b26a00' : '#0e9f4f'],
-    ['Zones at 85%+', String(hotZones.length), hotZones.length ? hotZones.map(z => z.id).join(', ') : 'all within threshold', hotZones.length ? '#e4002b' : '#0e9f4f'],
-    ['Incidents', String(incidents.length), incidents.filter(i => i.status === 'new').length ? `${incidents.filter(i => i.status === 'new').length} unassigned` : 'none open', incidents.length ? '#b26a00' : '#0e9f4f'],
+    ['Avg gate wait', `${avgWait} min`, `${openGates.length} gates open`, avgWait > 20 ? '#e4002b' : avgWait > 12 ? '#915700' : '#0a7d3e'],
+    ['Zones at 85%+', String(hotZones.length), hotZones.length ? hotZones.map(z => z.id).join(', ') : 'all within threshold', hotZones.length ? '#e4002b' : '#0a7d3e'],
+    ['Incidents', String(incidents.length), incidents.filter(i => i.status === 'new').length ? `${incidents.filter(i => i.status === 'new').length} unassigned` : 'none open', incidents.length ? '#915700' : '#0a7d3e'],
   ]
 
   const sevChip = s => `ff-chip ff-chip-${s === 'high' ? 'high' : s === 'medium' ? 'medium' : 'low'}`
@@ -186,7 +186,7 @@ Write the analyst's read.`,
                 </div>
               ) : (
                 <p style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ color: '#0e9f4f', display: 'inline-flex' }}><Icon name="check" size={16} /></span>
+                  <span style={{ color: '#0a7d3e', display: 'inline-flex' }}><Icon name="check" size={16} /></span>
                   Nothing off-pattern. The venue is behaving normally.
                 </p>
               )}
@@ -201,7 +201,7 @@ Write the analyst's read.`,
                 <Sparkline data={history} color="#2aa5e0" width={320} height={70} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 12.5, color: 'var(--muted)' }}>
                   <span>{Math.min(...history).toLocaleString()}</span>
-                  <span style={{ color: trend > 0 ? '#0e9f4f' : trend < 0 ? '#e4002b' : 'var(--faint)', fontWeight: 700 }}>
+                  <span style={{ color: trend > 0 ? '#0a7d3e' : trend < 0 ? '#e4002b' : 'var(--faint)', fontWeight: 700 }}>
                     {trend > 0 ? '▲' : trend < 0 ? '▼' : '■'} {Math.abs(trend).toLocaleString()}
                   </span>
                   <span>{Math.max(...history).toLocaleString()}</span>
@@ -222,7 +222,7 @@ Write the analyst's read.`,
                   ) : (
                     <>
                       <div className="ff-gauge-track" style={{ flex: 1, height: 7 }}>
-                        <div className="ff-gauge-fill" style={{ width: `${Math.min(g.density, 100)}%`, background: g.waitMin > 20 ? '#e4002b' : g.waitMin > 12 ? '#b26a00' : '#0e9f4f' }} />
+                        <div className="ff-gauge-fill" style={{ width: `${Math.min(g.density, 100)}%`, background: g.waitMin > 20 ? '#e4002b' : g.waitMin > 12 ? '#915700' : '#0a7d3e' }} />
                       </div>
                       <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 13.5, color: g.waitMin > 20 ? '#e4002b' : 'var(--muted)', width: 52, textAlign: 'right', flexShrink: 0 }}>{g.waitMin} min</span>
                     </>

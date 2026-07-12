@@ -8,7 +8,7 @@ import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 import { toast } from '../shared/Toast.jsx'
 
-const ACCENT = '#0e9f4f'
+const ACCENT = '#0a7d3e'
 const STORE = 'ff-fan-a11y'
 
 const PREFS = [
@@ -208,7 +208,7 @@ Produce this fan's personal access plan for right now.`,
             <div style={{ marginTop: 12, display: 'grid', gap: 8 }}>
               {plan.cautions.map((c, i) => (
                 <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>
-                  <span style={{ color: '#b26a00', marginTop: 1, flexShrink: 0 }}><Icon name="alert" size={15} /></span>
+                  <span style={{ color: '#915700', marginTop: 1, flexShrink: 0 }}><Icon name="alert" size={15} /></span>
                   {c}
                 </div>
               ))}

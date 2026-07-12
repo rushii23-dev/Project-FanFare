@@ -38,9 +38,9 @@ export default function OrganizerTeam({ staffRoster, onLogout }) {
 
       <div className="ff-kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 18 }}>
         <div className="ff-rise-card ff-st1"><StatCard icon="users" label="Total staff" value={staffRoster.length} accent={ACCENT} /></div>
-        <div className="ff-rise-card ff-st2"><StatCard icon="check" label="Available" value={counts.available} accent="#0e9f4f" /></div>
-        <div className="ff-rise-card ff-st3"><StatCard icon="pause" label="On break" value={counts['on-break']} accent="#c8890a" /></div>
-        <div className="ff-rise-card ff-st4"><StatCard icon="clock" label="Off duty" value={counts['off-duty']} accent="#7a9585" /></div>
+        <div className="ff-rise-card ff-st2"><StatCard icon="check" label="Available" value={counts.available} accent="#0a7d3e" /></div>
+        <div className="ff-rise-card ff-st3"><StatCard icon="pause" label="On break" value={counts['on-break']} accent="#915700" /></div>
+        <div className="ff-rise-card ff-st4"><StatCard icon="clock" label="Off duty" value={counts['off-duty']} accent="#5d7566" /></div>
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>

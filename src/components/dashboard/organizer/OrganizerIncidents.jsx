@@ -15,7 +15,7 @@ export default function OrganizerIncidents({ incidents, staffRoster, onUpdateInc
   const counts = { new: incidents.filter(i => i.status === 'new').length, assigned: incidents.filter(i => i.status === 'assigned').length, resolved: incidents.filter(i => i.status === 'resolved').length }
 
   const assign = (id, name) => { onUpdateIncidents(prev => prev.map(i => i.id === id ? { ...i, assignedTo: name, status: 'assigned' } : i)); toast(`Assigned to ${name}`, { accent: '#1673a8' }) }
-  const resolve = (id) => { onUpdateIncidents(prev => prev.map(i => i.id === id ? { ...i, status: 'resolved' } : i)); toast('Incident resolved', { accent: '#0e9f4f' }) }
+  const resolve = (id) => { onUpdateIncidents(prev => prev.map(i => i.id === id ? { ...i, status: 'resolved' } : i)); toast('Incident resolved', { accent: '#0a7d3e' }) }
 
   return (
     <div>
@@ -31,7 +31,7 @@ export default function OrganizerIncidents({ incidents, staffRoster, onUpdateInc
         {shown.length === 0 ? (
           <Panel><div className="ff-empty"><span className="ff-empty-icon"><Icon name="alert" size={26} /></span><div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>No incidents reported</div><p className="ff-empty-text">Incidents appear here in real time as staff file them from the Report Incident screen. There are none right now.</p></div></Panel>
         ) : shown.map((inc, i) => (
-          <div key={inc.id} className={`ff-panel ff-rise-card ff-st${Math.min(i + 1, 8)}`} style={{ opacity: inc.status === 'resolved' ? 0.7 : 1, borderLeft: `3px solid ${inc.severity === 'high' ? '#e4002b' : inc.severity === 'medium' ? '#c8890a' : '#0e9f4f'}` }}>
+          <div key={inc.id} className={`ff-panel ff-rise-card ff-st${Math.min(i + 1, 8)}`} style={{ opacity: inc.status === 'resolved' ? 0.7 : 1, borderLeft: `3px solid ${inc.severity === 'high' ? '#e4002b' : inc.severity === 'medium' ? '#c8890a' : '#0a7d3e'}` }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: 240 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>

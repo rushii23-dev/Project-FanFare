@@ -4,7 +4,7 @@ import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 import { toast } from '../shared/Toast.jsx'
 
-const ACCENT = '#b26a00'
+const ACCENT = '#915700'
 const STORE = 'ff-staff-tasks'
 const FILTERS = [['all', 'All'], ['pending', 'Pending'], ['in-progress', 'In progress'], ['done', 'Done']]
 const chipClass = p => `ff-chip ff-chip-${p === 'high' ? 'high' : p === 'medium' ? 'medium' : 'low'}`
@@ -26,7 +26,7 @@ export default function StaffTasks({ tasks, onUpdateTasks }) {
       try { localStorage.setItem(STORE, JSON.stringify(Object.fromEntries(next.map(t => [t.id, t.status])))) } catch { /* ignore */ }
       return next
     })
-    toast(status === 'done' ? 'Task completed' : `Marked ${status.replace('-', ' ')}`, { accent: status === 'done' ? '#0e9f4f' : ACCENT })
+    toast(status === 'done' ? 'Task completed' : `Marked ${status.replace('-', ' ')}`, { accent: status === 'done' ? '#0a7d3e' : ACCENT })
   }
 
   const shown = tasks.filter(t => filter === 'all' || t.status === filter)
@@ -50,7 +50,7 @@ export default function StaffTasks({ tasks, onUpdateTasks }) {
         ) : shown.map((t, i) => (
           <div key={t.id} className={`ff-panel ff-rise-card ff-st${Math.min(i + 1, 8)}`} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 20px', opacity: t.status === 'done' ? 0.66 : 1 }}>
             <span style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              color: t.status === 'done' ? '#0e9f4f' : ACCENT, background: t.status === 'done' ? 'rgba(14,159,79,0.12)' : 'rgba(178,106,0,0.1)', border: `1px solid ${t.status === 'done' ? 'rgba(14,159,79,0.24)' : 'rgba(178,106,0,0.24)'}` }}>
+              color: t.status === 'done' ? '#0a7d3e' : ACCENT, background: t.status === 'done' ? 'rgba(14,159,79,0.12)' : 'rgba(178,106,0,0.1)', border: `1px solid ${t.status === 'done' ? 'rgba(14,159,79,0.24)' : 'rgba(178,106,0,0.24)'}` }}>
               <Icon name={t.status === 'done' ? 'check' : 'clipboard'} size={19} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -63,7 +63,7 @@ export default function StaffTasks({ tasks, onUpdateTasks }) {
             </div>
             <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
               {t.status === 'pending' && <button className="ff-filter-chip" onClick={() => setStatus(t.id, 'in-progress')}>Start</button>}
-              {t.status !== 'done' && <button className="ff-filter-chip" style={{ borderColor: '#0e9f4f', color: '#0e9f4f' }} onClick={() => setStatus(t.id, 'done')}>Complete</button>}
+              {t.status !== 'done' && <button className="ff-filter-chip" style={{ borderColor: '#0a7d3e', color: '#0a7d3e' }} onClick={() => setStatus(t.id, 'done')}>Complete</button>}
               {t.status === 'done' && <button className="ff-filter-chip" onClick={() => setStatus(t.id, 'pending')}>Reopen</button>}
             </div>
           </div>

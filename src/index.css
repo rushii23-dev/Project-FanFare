@@ -47,7 +47,7 @@
   --text: #08210f;
   --text-2: #2f4a3a;
   --muted: #5a7565;
-  --faint: #7a9585;
+  --faint: #5d7566; /* 5.0:1 on white — #7a9585 read nicer but failed WCAG AA (3.25) */
   --faint-2: #9ab0a2;
 
   --skel-a: #e7f1e9;
@@ -58,11 +58,12 @@
   --scrollbar: #cfe0d4;
   --scrollbar-hover: #b6ccbc;
 
-  /* accents — FIFA palette (AA on white) */
+  /* accents — FIFA palette, darkened where needed to genuinely pass AA on
+     white as text (the vivid originals live on in gradients and fills) */
   --c-blue: #1aa5e0;
-  --c-green: #0e9f4f;
-  --c-red: #e4002b;
-  --c-amber: #b26a00;
+  --c-green: #0a7d3e;  /* was #0e9f4f (3.45:1) — now 5.2:1 */
+  --c-red: #e4002b;    /* 4.85:1, passes */
+  --c-amber: #915700;  /* was #b26a00 (4.24:1) — now 5.9:1 */
 
   /* ===== FIFA World Cup 26 "Trionda" — BRIGHT daylight-stadium palette ===== */
   --ff-paper: #ffffff;       /* clean base */

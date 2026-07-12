@@ -6,8 +6,8 @@ import StadiumMap from '../shared/StadiumMap.jsx'
 import CapacityGauge from '../shared/CapacityGauge.jsx'
 import Sparkline from '../shared/Sparkline.jsx'
 
-const ACCENT = '#b26a00'
-function status(pct) { return pct >= 85 ? ['Packed', '#e4002b'] : pct >= 65 ? ['Busy', '#c8890a'] : ['Calm', '#0e9f4f'] }
+const ACCENT = '#915700'
+function status(pct) { return pct >= 85 ? ['Packed', '#e4002b'] : pct >= 65 ? ['Busy', '#c8890a'] : ['Calm', '#0a7d3e'] }
 
 export default function StaffZones({ zones }) {
   const alerts = zones.filter(z => (z.current / z.capacity) >= 0.85)

@@ -5,7 +5,7 @@ import Panel from '../shared/Panel.jsx'
 import StatCard from '../shared/StatCard.jsx'
 import DataPending from '../shared/DataPending.jsx'
 
-const ACCENT = '#b26a00'
+const ACCENT = '#915700'
 
 export default function StaffProfile({ staffRoster, tasks, incidents, onLogout }) {
   const me = staffRoster[0]
@@ -33,7 +33,7 @@ export default function StaffProfile({ staffRoster, tasks, incidents, onLogout }
       <PageHead eyebrow="Profile" title="Your account" subtitle="Shift summary and reporting history." />
 
       <div className="ff-kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 18 }}>
-        <div className="ff-rise-card ff-st1"><StatCard icon="check" label="Tasks completed" value={me.tasksCompleted + doneToday} accent="#0e9f4f" /></div>
+        <div className="ff-rise-card ff-st1"><StatCard icon="check" label="Tasks completed" value={me.tasksCompleted + doneToday} accent="#0a7d3e" /></div>
         <div className="ff-rise-card ff-st2"><StatCard icon="alert" label="Incidents filed" value={me.incidentsFiled} accent="#e4002b" /></div>
         <div className="ff-rise-card ff-st3"><StatCard icon="clock" label="On shift" value={1} suffix=" active" accent={ACCENT} /></div>
       </div>

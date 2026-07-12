@@ -25,12 +25,12 @@ function sectorPath(a0, a1) {
 function heatColor(pct) {
   if (pct >= 85) return { fill: 'rgba(228,0,43,0.32)', stroke: '#e4002b' }
   if (pct >= 65) return { fill: 'rgba(245,179,1,0.3)', stroke: '#c8890a' }
-  return { fill: 'rgba(14,159,79,0.24)', stroke: '#0e9f4f' }
+  return { fill: 'rgba(14,159,79,0.24)', stroke: '#0a7d3e' }
 }
 
 export default function StadiumMap({
   zones = [], gates = [], highlightZone = null, highlightGate = null,
-  onZoneClick, onGateClick, accent = '#0e9f4f', mode = 'default',
+  onZoneClick, onGateClick, accent = '#0a7d3e', mode = 'default',
 }) {
   const [hover, setHover] = useState(null)
   const list = zones.length ? zones : Array.from({ length: 6 }, (_, i) => ({ id: String.fromCharCode(65 + i), current: 0, capacity: 1 }))

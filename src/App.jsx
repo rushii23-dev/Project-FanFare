@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { lazy, Suspense, useCallback, useState } from 'react'
 import { useScrollEffects } from './hooks/useScrollEffects.js'
 import Nav from './components/Nav.jsx'
 import Landing from './components/Landing.jsx'
@@ -18,35 +18,37 @@ import {
 // Simulated venue telemetry (clearly labelled in the UI — see simFeed.js).
 import { useVenueSim } from './lib/simFeed.js'
 
-// Dashboard shell
-import DashboardShell from './components/dashboard/DashboardShell.jsx'
+// The dashboards (and Leaflet with them) are lazy: someone opening the
+// landing page downloads only the marketing code, and the dashboard chunks
+// arrive when they log in.
+const DashboardShell = lazy(() => import('./components/dashboard/DashboardShell.jsx'))
 
 // Fan portal views
-import FanDashboard from './components/dashboard/fan/FanDashboard.jsx'
-import FanConcierge from './components/dashboard/fan/FanConcierge.jsx'
-import FanMap from './components/dashboard/fan/FanMap.jsx'
-import FanAccessibility from './components/dashboard/fan/FanAccessibility.jsx'
-import FanTransport from './components/dashboard/fan/FanTransport.jsx'
-import FanNotifications from './components/dashboard/fan/FanNotifications.jsx'
-import FanProfile from './components/dashboard/fan/FanProfile.jsx'
+const FanDashboard = lazy(() => import('./components/dashboard/fan/FanDashboard.jsx'))
+const FanConcierge = lazy(() => import('./components/dashboard/fan/FanConcierge.jsx'))
+const FanMap = lazy(() => import('./components/dashboard/fan/FanMap.jsx'))
+const FanAccessibility = lazy(() => import('./components/dashboard/fan/FanAccessibility.jsx'))
+const FanTransport = lazy(() => import('./components/dashboard/fan/FanTransport.jsx'))
+const FanNotifications = lazy(() => import('./components/dashboard/fan/FanNotifications.jsx'))
+const FanProfile = lazy(() => import('./components/dashboard/fan/FanProfile.jsx'))
 
 // Staff portal views
-import StaffDashboard from './components/dashboard/staff/StaffDashboard.jsx'
-import StaffTasks from './components/dashboard/staff/StaffTasks.jsx'
-import StaffIncident from './components/dashboard/staff/StaffIncident.jsx'
-import StaffTranslation from './components/dashboard/staff/StaffTranslation.jsx'
-import StaffZones from './components/dashboard/staff/StaffZones.jsx'
-import StaffProfile from './components/dashboard/staff/StaffProfile.jsx'
+const StaffDashboard = lazy(() => import('./components/dashboard/staff/StaffDashboard.jsx'))
+const StaffTasks = lazy(() => import('./components/dashboard/staff/StaffTasks.jsx'))
+const StaffIncident = lazy(() => import('./components/dashboard/staff/StaffIncident.jsx'))
+const StaffTranslation = lazy(() => import('./components/dashboard/staff/StaffTranslation.jsx'))
+const StaffZones = lazy(() => import('./components/dashboard/staff/StaffZones.jsx'))
+const StaffProfile = lazy(() => import('./components/dashboard/staff/StaffProfile.jsx'))
 
 // Organizer portal views
-import OrganizerDashboard from './components/dashboard/organizer/OrganizerDashboard.jsx'
-import OrganizerHeatmap from './components/dashboard/organizer/OrganizerHeatmap.jsx'
-import OrganizerCopilot from './components/dashboard/organizer/OrganizerCopilot.jsx'
-import OrganizerIncidents from './components/dashboard/organizer/OrganizerIncidents.jsx'
-import OrganizerBriefings from './components/dashboard/organizer/OrganizerBriefings.jsx'
-import OrganizerAnalytics from './components/dashboard/organizer/OrganizerAnalytics.jsx'
-import OrganizerSustainability from './components/dashboard/organizer/OrganizerSustainability.jsx'
-import OrganizerTeam from './components/dashboard/organizer/OrganizerTeam.jsx'
+const OrganizerDashboard = lazy(() => import('./components/dashboard/organizer/OrganizerDashboard.jsx'))
+const OrganizerHeatmap = lazy(() => import('./components/dashboard/organizer/OrganizerHeatmap.jsx'))
+const OrganizerCopilot = lazy(() => import('./components/dashboard/organizer/OrganizerCopilot.jsx'))
+const OrganizerIncidents = lazy(() => import('./components/dashboard/organizer/OrganizerIncidents.jsx'))
+const OrganizerBriefings = lazy(() => import('./components/dashboard/organizer/OrganizerBriefings.jsx'))
+const OrganizerAnalytics = lazy(() => import('./components/dashboard/organizer/OrganizerAnalytics.jsx'))
+const OrganizerSustainability = lazy(() => import('./components/dashboard/organizer/OrganizerSustainability.jsx'))
+const OrganizerTeam = lazy(() => import('./components/dashboard/organizer/OrganizerTeam.jsx'))
 
 export default function App() {
   // ── Screen & role state ──
@@ -237,8 +239,16 @@ export default function App() {
         </main>
       )}
 
-      {/* Dashboard screens get the DashboardShell */}
+      {/* Dashboard screens get the DashboardShell. The chunk loads on first
+          entry; the fallback is a quiet branded wash, not a spinner flash. */}
       {isDashboard && (
+        <Suspense
+          fallback={
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eef5f0', color: '#5a7565', fontFamily: 'system-ui, sans-serif', fontSize: 14, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Loading your dashboard…
+            </div>
+          }
+        >
         <DashboardShell
           role={currentRole}
           tabs={tabsMap[currentRole] || fanTabs}
@@ -252,6 +262,7 @@ export default function App() {
         >
           {renderDashboardContent()}
         </DashboardShell>
+        </Suspense>
       )}
     </div>
   )

@@ -9,7 +9,7 @@ import Panel from '../shared/Panel.jsx'
 import SimBadge from '../shared/SimBadge.jsx'
 import { toast } from '../shared/Toast.jsx'
 
-const ACCENT = '#0e9f4f'
+const ACCENT = '#0a7d3e'
 
 const SYSTEM = `You are the FanFare sustainability analyst for a FIFA World Cup 2026 match organizer.
 
@@ -134,7 +134,7 @@ Write the organizer's sustainability briefing.`,
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14, marginBottom: 18 }}>
         {[
           ['Travel footprint', `${totalT.toFixed(1)} t`, 'CO₂e, round trip', '#e4002b'],
-          ['Per fan', `${perFanKg.toFixed(1)} kg`, 'CO₂e each', '#b26a00'],
+          ['Per fan', `${perFanKg.toFixed(1)} kg`, 'CO₂e each', '#915700'],
           ['Avoided', `${avoidedT.toFixed(1)} t`, 'vs everyone driving alone', ACCENT],
           ['Attendance', attendance.toLocaleString(), 'fans travelling', '#2aa5e0'],
         ].map(([label, value, sub, col], i) => (
@@ -155,12 +155,12 @@ Write the organizer's sustainability briefing.`,
                   <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>
                     {r.label} <span style={{ color: 'var(--faint)', fontWeight: 600 }}>· {(r.share * 100).toFixed(0)}% of fans</span>
                   </span>
-                  <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 14.5, color: r.factor === 0 ? ACCENT : r.factor > 100 ? '#e4002b' : '#b26a00', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 14.5, color: r.factor === 0 ? ACCENT : r.factor > 100 ? '#e4002b' : '#915700', whiteSpace: 'nowrap' }}>
                     {r.tonnes < 0.05 ? '0' : r.tonnes.toFixed(1)} t
                   </span>
                 </div>
                 <div className="ff-gauge-track" style={{ height: 7 }}>
-                  <div className="ff-gauge-fill" style={{ width: `${Math.max((r.kg / maxKg) * 100, 1.5)}%`, background: r.factor === 0 ? ACCENT : r.factor > 100 ? '#e4002b' : '#b26a00' }} />
+                  <div className="ff-gauge-fill" style={{ width: `${Math.max((r.kg / maxKg) * 100, 1.5)}%`, background: r.factor === 0 ? ACCENT : r.factor > 100 ? '#e4002b' : '#915700' }} />
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--faint)', marginTop: 4 }}>
                   {r.fans.toLocaleString()} fans × {AVG_TRIP_KM} km × {r.factor} g/passenger-km × 2

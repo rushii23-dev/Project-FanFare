@@ -12,7 +12,7 @@ import WeatherTile from '../shared/WeatherTile.jsx'
 import WorldCupFeed from '../shared/WorldCupFeed.jsx'
 import TicketModal from '../shared/TicketModal.jsx'
 
-const ACCENT = '#0e9f4f'
+const ACCENT = '#0a7d3e'
 
 export default function FanDashboard({ nav, fanProfile, zones, gates, onUpdateProfile }) {
   const venue = useVenue()

@@ -7,11 +7,11 @@ import WeatherTile from '../shared/WeatherTile.jsx'
 import DataPending from '../shared/DataPending.jsx'
 import { toast } from '../shared/Toast.jsx'
 
-const ACCENT = '#b26a00'
+const ACCENT = '#915700'
 const DUTY = [
-  { id: 'available', label: 'Available', color: '#0e9f4f' },
-  { id: 'on-break', label: 'On break', color: '#b26a00' },
-  { id: 'off-duty', label: 'Off duty', color: '#7a9585' },
+  { id: 'available', label: 'Available', color: '#0a7d3e' },
+  { id: 'on-break', label: 'On break', color: '#915700' },
+  { id: 'off-duty', label: 'Off duty', color: '#5d7566' },
 ]
 
 export default function StaffDashboard({ nav, staffRoster, tasks, zones, onUpdateTasks, onUpdateStaff }) {
@@ -42,14 +42,14 @@ export default function StaffDashboard({ nav, staffRoster, tasks, zones, onUpdat
 
   const fmt = t => { const d = new Date(t); return isNaN(d) ? t : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) }
   const setDuty = (v) => { onUpdateStaff(prev => prev.map((s, i) => i === 0 ? { ...s, status: v } : s)); toast(`Status: ${v.replace('-', ' ')}`, { accent: ACCENT }) }
-  const complete = (id) => { onUpdateTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'done' } : t)); toast('Task completed', { accent: '#0e9f4f' }) }
+  const complete = (id) => { onUpdateTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'done' } : t)); toast('Task completed', { accent: '#0a7d3e' }) }
 
   return (
     <div>
       <PageHead eyebrow={`${me.role} · Zone ${me.zone}`} title={`Hi ${me.name.split(' ')[0]}`} subtitle="Your shift at a glance." />
 
       <div className="ff-kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 18 }}>
-        <div className="ff-rise-card ff-st1"><StatCard icon="check" label="Tasks done" value={done} suffix={`/${tasks.length}`} accent="#0e9f4f" /></div>
+        <div className="ff-rise-card ff-st1"><StatCard icon="check" label="Tasks done" value={done} suffix={`/${tasks.length}`} accent="#0a7d3e" /></div>
         <div className="ff-rise-card ff-st2"><StatCard icon="clock" label="In progress" value={inProg} accent={ACCENT} /></div>
         <div className="ff-rise-card ff-st3"><StatCard icon="grid" label={`Zone ${me.zone} density`} value={zonePct} suffix="%" accent={zonePct >= 85 ? '#e4002b' : ACCENT} /></div>
         <div className="ff-rise-card ff-st4"><StatCard icon="alert" label="Incidents filed" value={me.incidentsFiled} accent="#e4002b" /></div>
@@ -95,7 +95,7 @@ export default function StaffDashboard({ nav, staffRoster, tasks, zones, onUpdat
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <Panel title="Task progress" icon="check" accent={ACCENT} className="ff-rise-card ff-st5">
             <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-              <ProgressRing value={taskPct} size={92} color="#0e9f4f" sub="done" />
+              <ProgressRing value={taskPct} size={92} color="#0a7d3e" sub="done" />
               <div>
                 <div style={{ fontSize: 14, color: 'var(--text-2)' }}><b>{done}</b> done · <b>{inProg}</b> active · <b>{pending}</b> pending</div>
                 <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 8 }}>Keep it up — you're {taskPct}% through today's list.</div>

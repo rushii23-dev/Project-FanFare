@@ -10,7 +10,7 @@ import Panel from '../shared/Panel.jsx'
 import VenueMap from '../shared/VenueMap.jsx'
 import DataPending from '../shared/DataPending.jsx'
 
-const ACCENT = '#0e9f4f'
+const ACCENT = '#0a7d3e'
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'MXN', 'JPY', 'BRL', 'INR', 'AUD']
 
 const ADVISOR_SYSTEM = `You are the FanFare travel advisor for a fan heading to a FIFA World Cup 2026 match.
@@ -167,7 +167,7 @@ Advise this fan.`,
       <div className="ff-rise-card ff-st1" style={{
         display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', marginBottom: 18, padding: '16px 20px', borderRadius: 16,
         border: '1px solid var(--line-strong)', overflow: 'hidden', position: 'relative',
-        background: 'radial-gradient(120% 160% at 100% 0%, rgba(228,0,43,0.07), transparent 45%), linear-gradient(180deg, color-mix(in srgb, var(--panel) 92%, #0e9f4f 3%), var(--panel))',
+        background: 'radial-gradient(120% 160% at 100% 0%, rgba(228,0,43,0.07), transparent 45%), linear-gradient(180deg, color-mix(in srgb, var(--panel) 92%, #0a7d3e 3%), var(--panel))',
       }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: HANKEN, fontWeight: 800, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: statusColor }}>
           <span className="ff-lsb-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor, boxShadow: `0 0 0 4px color-mix(in srgb, ${statusColor} 22%, transparent)`, animation: (m?.phase === 'LIVE' || m?.phase === 'HT') ? 'ff-live-dot 1.4s ease-in-out infinite' : 'none' }} /> {statusText}
@@ -234,7 +234,7 @@ Advise this fan.`,
               {ranked.map((r, i) => {
                 const pct = ranked.length > 1 ? (r.kg / ranked[ranked.length - 1].kg) * 100 : 0
                 const clean = i === 0
-                const col = clean ? ACCENT : r.kg > (greenest?.kg ?? 0) * 3 ? '#e4002b' : '#b26a00'
+                const col = clean ? ACCENT : r.kg > (greenest?.kg ?? 0) * 3 ? '#e4002b' : '#915700'
                 const saved = savedVsDriving(r.mode, km)
                 return (
                   <div key={r.mode} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 12, border: `1px solid ${clean ? 'rgba(14,159,79,0.3)' : 'var(--line)'}`, background: clean ? 'rgba(14,159,79,0.06)' : 'var(--panel)' }}>

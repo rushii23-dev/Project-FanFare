@@ -6,8 +6,8 @@ import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 import { toast } from '../shared/Toast.jsx'
 
-const ACCENT = '#b26a00'
-const SEV = [['low', '#0e9f4f'], ['medium', '#b26a00'], ['high', '#e4002b']]
+const ACCENT = '#915700'
+const SEV = [['low', '#0a7d3e'], ['medium', '#915700'], ['high', '#e4002b']]
 const SEV_IDS = SEV.map(([s]) => s)
 const CATS = ['medical', 'crowd', 'facilities', 'accessibility', 'security', 'other']
 // Fallback zone list so staff can always file, even before a live zone feed exists.
@@ -98,7 +98,7 @@ Produce the JSON report.`,
       location: z ? z.name : `Zone ${zone}`, zone, status: 'new', assignedTo: null,
       reportedBy: 'You', reportedAt: new Date().toISOString(),
     })
-    toast('Incident filed & routed to Operations', { accent: '#0e9f4f' })
+    toast('Incident filed & routed to Operations', { accent: '#0a7d3e' })
     setNotes(''); setTitle(''); setDesc(''); setAction(''); setSeverity('medium'); setCategory('crowd')
   }
 

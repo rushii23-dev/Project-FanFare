@@ -12,8 +12,10 @@ export const triadSoft = ['rgba(42,165,224,0.16)', 'rgba(47,162,78,0.16)', 'rgba
 export const triadBorder = ['rgba(42,165,224,0.34)', 'rgba(47,162,78,0.34)', 'rgba(226,58,69,0.34)']
 export const triadGhost = ['rgba(42,165,224,0.09)', 'rgba(47,162,78,0.09)', 'rgba(226,58,69,0.09)']
 
-// Role → accent color mapping (FIFA bright palette; AA on white)
-export const roleAccent = { fan: '#0e9f4f', staff: '#b26a00', organizer: '#e4002b' }
+// Role → accent color mapping. WCAG-AA as text on white (fan 5.2:1,
+// staff 5.9:1, organizer 4.9:1), verified with axe — don't brighten
+// these without re-checking contrast.
+export const roleAccent = { fan: '#0a7d3e', staff: '#915700', organizer: '#e4002b' }
 
 // The venue is NOT hardcoded. It is resolved at runtime from the real FIFA
 // World Cup 2026 feed via `useVenue()` in src/lib/venue.js — whichever stadium

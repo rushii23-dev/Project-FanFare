@@ -32,7 +32,7 @@ export default function VenueMap({
     if (!map || !layer) return
     layer.clearLayers()
     markers.forEach(m => {
-      const color = m.color || '#0e9f4f'
+      const color = m.color || '#0a7d3e'
       const icon = L.divIcon({
         className: '', iconSize: [26, 26], iconAnchor: [13, 26],
         html: `<div style="width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);

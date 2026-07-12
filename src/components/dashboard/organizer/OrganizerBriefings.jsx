@@ -130,7 +130,7 @@ export default function OrganizerBriefings({ recommendations, onUpdateRecs, zone
 
   const act = (id, status) => {
     onUpdateRecs(prev => prev.map(r => r.id === id ? { ...r, status } : r))
-    toast(status === 'accepted' ? 'Action accepted' : 'Recommendation dismissed', { accent: status === 'accepted' ? '#0e9f4f' : ACCENT, icon: status === 'accepted' ? 'check' : 'close' })
+    toast(status === 'accepted' ? 'Action accepted' : 'Recommendation dismissed', { accent: status === 'accepted' ? '#0a7d3e' : ACCENT, icon: status === 'accepted' ? 'check' : 'close' })
   }
 
   return (
@@ -200,7 +200,7 @@ export default function OrganizerBriefings({ recommendations, onUpdateRecs, zone
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
                     <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 16, color: 'var(--muted)' }}>{r.impact.from}</span>
                     <span style={{ color: 'var(--faint)' }}><Icon name="arrow" size={16} /></span>
-                    <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 16, color: '#0e9f4f' }}>{r.impact.to}</span>
+                    <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 16, color: '#0a7d3e' }}>{r.impact.to}</span>
                   </div>
                 </div>
               </div>

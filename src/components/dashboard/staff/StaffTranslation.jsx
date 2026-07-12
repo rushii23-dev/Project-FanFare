@@ -6,7 +6,7 @@ import { askAIJson, aiErrorMessage, useAIStatus } from '../../../lib/ai.js'
 import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 
-const ACCENT = '#b26a00'
+const ACCENT = '#915700'
 const speechLang = { en: 'en-US', es: 'es-ES', fr: 'fr-FR', pt: 'pt-BR', de: 'de-DE', ar: 'ar-SA', ja: 'ja-JP', hi: 'hi-IN' }
 const LANG_NAME = Object.fromEntries(LANGS.map(l => [l.code, l.label]))
 

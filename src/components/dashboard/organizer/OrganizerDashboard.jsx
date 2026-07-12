@@ -22,7 +22,7 @@ export default function OrganizerDashboard({ nav, zones, gates, recommendations,
 
   const act = (id, status) => {
     onUpdateRecs(prev => prev.map(r => r.id === id ? { ...r, status } : r))
-    toast(status === 'accepted' ? 'Action accepted' : 'Recommendation dismissed', { accent: status === 'accepted' ? '#0e9f4f' : ACCENT, icon: status === 'accepted' ? 'check' : 'close' })
+    toast(status === 'accepted' ? 'Action accepted' : 'Recommendation dismissed', { accent: status === 'accepted' ? '#0a7d3e' : ACCENT, icon: status === 'accepted' ? 'check' : 'close' })
   }
 
   return (
@@ -32,8 +32,8 @@ export default function OrganizerDashboard({ nav, zones, gates, recommendations,
       {hasCrowd ? (
         <div className="ff-kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 18 }}>
           <div className="ff-rise-card ff-st1"><StatCard icon="users" label="In attendance" value={attendance} accent={ACCENT} sub={`${occ}% of capacity`} /></div>
-          <div className="ff-rise-card ff-st2"><StatCard icon="gauge" label="Occupancy" value={occ} suffix="%" accent={occ >= 85 ? '#e4002b' : '#0e9f4f'} /></div>
-          <div className="ff-rise-card ff-st3"><StatCard icon="clock" label="Avg gate wait" value={avgWait} suffix=" min" accent={avgWait >= 8 ? '#c8890a' : '#0e9f4f'} /></div>
+          <div className="ff-rise-card ff-st2"><StatCard icon="gauge" label="Occupancy" value={occ} suffix="%" accent={occ >= 85 ? '#e4002b' : '#0a7d3e'} /></div>
+          <div className="ff-rise-card ff-st3"><StatCard icon="clock" label="Avg gate wait" value={avgWait} suffix=" min" accent={avgWait >= 8 ? '#c8890a' : '#0a7d3e'} /></div>
           <div className="ff-rise-card ff-st4"><StatCard icon="clipboard" label="Pending actions" value={pending.length} accent={ACCENT} /></div>
         </div>
       ) : (
@@ -57,7 +57,7 @@ export default function OrganizerDashboard({ nav, zones, gates, recommendations,
               <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--line-soft)' }}>
                 <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 16, color: 'var(--text)', width: 34 }}>{g.id}</span>
                 <div className="ff-gauge-track" style={{ flex: 1, height: 7 }}>
-                  <div className="ff-gauge-fill" style={{ width: `${g.density}%`, background: g.density >= 85 ? '#e4002b' : g.density >= 65 ? '#c8890a' : '#0e9f4f' }} />
+                  <div className="ff-gauge-fill" style={{ width: `${g.density}%`, background: g.density >= 85 ? '#e4002b' : g.density >= 65 ? '#c8890a' : '#0a7d3e' }} />
                 </div>
                 <span style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 14, color: g.waitMin >= 10 ? 'var(--c-red)' : 'var(--text)', width: 48, textAlign: 'right' }}>{g.waitMin}m</span>
               </div>
@@ -79,7 +79,7 @@ export default function OrganizerDashboard({ nav, zones, gates, recommendations,
                 <span className={`ff-chip ff-chip-${r.priority === 'high' ? 'high' : r.priority === 'medium' ? 'medium' : 'low'}`} style={{ flexShrink: 0 }}>{r.priority}</span>
                 <div style={{ flex: 1, minWidth: 200 }}>
                   <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text)' }}>{r.title}</div>
-                  <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4 }}>{r.impact.metric}: {r.impact.from} → <b style={{ color: '#0e9f4f' }}>{r.impact.to}</b></div>
+                  <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 4 }}>{r.impact.metric}: {r.impact.from} → <b style={{ color: '#0a7d3e' }}>{r.impact.to}</b></div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                   <button className="ff-btn" onClick={() => act(r.id, 'accepted')} style={{ padding: '9px 18px', borderRadius: 24, border: 'none', color: '#fff', fontFamily: HANKEN, fontWeight: 700, fontSize: 12.5, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer' }}>Accept</button>
