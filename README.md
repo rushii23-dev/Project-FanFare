@@ -148,6 +148,7 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 - **The offline-honesty layer** — every free-API helper (weather, FX, translation, geocoding) and the venue resolver are unit-tested to degrade to an honest fallback, never a fabricated value, when the network fails
 - **The live-feed engine** — the logic that picks which match the score bar features is tested across every phase (in-play with real minute and lead flags, half-time, upcoming, full-time), proves a finished match is never presented as live, filters foreign leagues/seasons, and never invents a score
 - **Every role dashboard, behaviorally** — staff duty switching and task completion, voice-dictated incident intake with the AI drafting mocked at the module boundary (and its manual fallback when no key is configured), organizer accept/dismiss of recommended actions, heatmap zone drill-in, incident triage assign/resolve, and both Gemini analyst surfaces including their honest failure and empty states
+- **The graceful-degradation chrome** — the hero and auth screens probe for a stadium photo and are tested down both paths (photo found, no photo shipped); the scroll ball survives its image 404ing; the footer works with no handlers wired; the fan map is proven in both stadium and city view, against a resolved and an unresolved venue
 - **Rate-limiter integrity under attack** — a blocked IP stays blocked while 5,000+ rotating IPs flood the endpoint; eviction reclaims memory only from under-limit entries
 
 **Security posture:**
