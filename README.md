@@ -116,7 +116,7 @@ Open the printed `localhost` URL. That's it.
 ```bash
 npm run build      # production build → dist/
 npm run preview    # preview that build locally
-npm test           # run the test suite (269 tests)
+npm test           # run the test suite (284 tests)
 npm run test:coverage  # same suite with enforced coverage thresholds
 npm run test:a11y  # WCAG 2.1 A/AA + 2.2 AA axe audit of every screen (build first)
 npm run lint       # ESLint incl. static accessibility (jsx-a11y) rules
@@ -131,11 +131,11 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 
 | Check | Command | Result |
 |---|---|---|
-| Tests | `npm test` | **269 tests, 16 suites, all passing** |
-| Coverage | `npm run test:coverage` | **93% statements · 85% branches · 91% functions · 97% lines**, thresholds enforced in CI — a PR that drops coverage fails |
+| Tests | `npm test` | **284 tests, 17 suites, all passing** |
+| Coverage | `npm run test:coverage` | **94% statements · 87% branches · 92% functions · 97% lines**, thresholds enforced in CI — a PR that drops coverage fails |
 | Accessibility | `npm run build && npm run test:a11y` | **WCAG 2.1 A/AA + 2.2 AA, zero axe violations on all 24 screens** — every dashboard tab of every role, in a real browser, enforced in CI |
-| Lint | `npm run lint` | **0 errors** (react-hooks correctness + jsx-a11y accessibility rules run as errors) |
-| Types | `npm run typecheck` | **0 errors** — strict `tsc --checkJs` (null-safety on) over `src/lib`, `src/hooks`, `src/data.js` and the API proxy, enforced in CI |
+| Lint | `npm run lint` | **0 errors** (react-hooks correctness + jsx-a11y accessibility rules + complexity/size ceilings run as errors) |
+| Types | `npm run typecheck` | **0 errors** — fully strict `tsc --checkJs` (null-safety **and** `noImplicitAny`) over `src/lib`, `src/hooks`, `src/data.js` and the API proxy, enforced in CI |
 | Dependency vulnerabilities | `npm audit` | **0 vulnerabilities** |
 | Secret in the client bundle | `grep -r "your key" dist/` | **absent** — the key never leaves the server |
 

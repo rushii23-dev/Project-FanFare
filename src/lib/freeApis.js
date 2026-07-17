@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 // ============================================================
 
 // ---- WMO weather code → label + icon name (our monoline set) ----
+/** @type {Record<number, [string, string]>} */
 const WMO = {
   0: ['Clear sky', 'sun'], 1: ['Mainly clear', 'sun'], 2: ['Partly cloudy', 'cloud'],
   3: ['Overcast', 'cloud'], 45: ['Fog', 'cloud'], 48: ['Rime fog', 'cloud'],
@@ -16,8 +17,9 @@ const WMO = {
   80: ['Rain showers', 'drop'], 81: ['Showers', 'drop'], 82: ['Violent showers', 'drop'],
   95: ['Thunderstorm', 'drop'], 96: ['Storm + hail', 'drop'], 99: ['Storm + hail', 'drop'],
 }
+/** @param {number | null | undefined} code */
 export function weatherMeta(code) {
-  const [label, icon] = WMO[code] || ['Clear', 'sun']
+  const [label, icon] = (code != null && WMO[code]) || ['Clear', 'sun']
   return { label, icon }
 }
 
@@ -25,6 +27,7 @@ export function weatherMeta(code) {
 // No default coordinates: the venue comes from the real match feed. If we don't
 // know where the match is, we report no weather rather than the weather
 // somewhere else.
+/** @param {number | null | undefined} lat @param {number | null | undefined} lon */
 export function useWeather(lat, lon) {
   const [state, setState] = useState(
     /** @type {{ loading: boolean, live: boolean, temp: number|null, feels: number|null, humidity: number|null, wind: number|null, code: number|null }} */
@@ -55,6 +58,7 @@ export function useWeather(lat, lon) {
 
 // ---- Translation (MyMemory, free, no key) ----
 // translate('Hello', 'en', 'es') -> 'Hola'
+/** @param {string | null | undefined} text @param {string} from @param {string} to */
 export async function translate(text, from, to) {
   const clean = (text || '').trim()
   if (!clean || from === to) return clean
@@ -97,9 +101,13 @@ export function useRates(base = 'USD') {
 }
 
 // ---- Team crest (TheSportsDB, free test key) ----
+/** @type {Record<string, string>} */
 const CREST_FALLBACK = {}
+/** @param {string | null | undefined} name */
 export function useTeam(name) {
-  const [state, setState] = useState({ loading: true, crest: null })
+  const [state, setState] = useState(
+    /** @type {{ loading: boolean, crest: string | null }} */ ({ loading: true, crest: null }),
+  )
   useEffect(() => {
     if (!name) return
     let alive = true
@@ -118,7 +126,11 @@ export function useTeam(name) {
 }
 
 // ---- Live FIFA World Cup 26 feed (TheSportsDB, free key) ----
-export const WC_LEAGUE = '4429'
+const WC_LEAGUE = '4429'
+/**
+ * @typedef {ReturnType<typeof normEvent>} WCEvent
+ * @param {Record<string, any>} e raw TheSportsDB event
+ */
 function normEvent(e) {
   return {
     id: e.idEvent, event: e.strEvent, home: e.strHomeTeam, away: e.strAwayTeam,
@@ -128,7 +140,10 @@ function normEvent(e) {
   }
 }
 export function useWorldCup() {
-  const [state, setState] = useState({ loading: true, live: false, results: [], fixtures: [], leagueBadge: null })
+  const [state, setState] = useState(
+    /** @type {{ loading: boolean, live: boolean, results: WCEvent[], fixtures: WCEvent[], leagueBadge: string | null }} */
+    ({ loading: true, live: false, results: [], fixtures: [], leagueBadge: null }),
+  )
   useEffect(() => {
     let alive = true
     const base = 'https://www.thesportsdb.com/api/v1/json/3'
@@ -137,8 +152,9 @@ export function useWorldCup() {
       fetch(`${base}/eventsnextleague.php?id=${WC_LEAGUE}`).then(r => r.json()).catch(() => ({})),
     ]).then(([past, next]) => {
       if (!alive) return
-      const results = (past.events || []).map(normEvent).sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
-      const fixtures = (next.events || []).map(normEvent).sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime())
+      const toEvents = (/** @type {Record<string, any>[] | undefined} */ arr) => (arr || []).map(normEvent)
+      const results = toEvents(past.events).sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+      const fixtures = toEvents(next.events).sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime())
       const leagueBadge = past.events?.[0]?.strLeagueBadge || next.events?.[0]?.strLeagueBadge || null
       setState({ loading: false, live: results.length > 0 || fixtures.length > 0, results, fixtures, leagueBadge })
     }).catch(() => { if (alive) setState(s => ({ ...s, loading: false })) })
@@ -148,6 +164,10 @@ export function useWorldCup() {
 }
 
 // ---- Geocode a city → coords (Open-Meteo geocoding, no key) ----
+/**
+ * @param {string | null | undefined} name
+ * @returns {Promise<{ lat: number, lon: number, label: string } | null>}
+ */
 export async function geocodeCity(name) {
   if (!name) return null
   try {
@@ -174,6 +194,7 @@ const WC_SEASON = '2026'
 const LIVE_STATUS_RE = /^(\d{1,3}'?\+?\d*|1H|2H|HT|ET|BT|P|PEN Live|Live|1st Half|2nd Half|Half Time|Extra Time|Break Time|Penalty)$/i
 const DONE_STATUS_RE = /^(FT|AET|PEN|AP|Match Finished|FT_PEN|After ET|After Pen|Awarded|Cancelled|Canc|Postponed|Abandoned|WO)$/i
 
+/** @param {string | null | undefined} s */
 function isLiveStatus(s) {
   const t = (s || '').trim()
   if (!t || DONE_STATUS_RE.test(t) || /^(NS|TBD|Not Started)$/i.test(t)) return false
@@ -181,6 +202,7 @@ function isLiveStatus(s) {
 }
 
 // Short 3-letter code from a team name (no code in the free feed).
+/** @param {string | null | undefined} name */
 function teamCode(name) {
   if (!name) return '???'
   const words = name.trim().split(/\s+/)
@@ -188,6 +210,7 @@ function teamCode(name) {
   return base.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase().padEnd(3, base.slice(1, 3).toUpperCase())
 }
 
+/** @param {string | null | undefined} status @param {string | null | undefined} progress */
 function liveMinuteLabel(status, progress) {
   const t = (status || '').trim()
   if (/^HT|Half Time$/i.test(t)) return 'HT'
@@ -200,6 +223,7 @@ function liveMinuteLabel(status, progress) {
 }
 
 // Choose the one match the bar should feature, WC-2026 only.
+/** @param {WCEvent[]} live @param {WCEvent[]} fixtures @param {WCEvent[]} results */
 function pickFeatured(live, fixtures, results) {
   if (live.length) {
     // Prefer a real in-play minute (furthest into the game) for a "most live" feel.
@@ -231,9 +255,11 @@ export function useLiveWorldCup() {
         fetch(`${base}/eventsday.php?d=${today}&l=${WC_LEAGUE}`).then(r => r.json()).catch(() => ({})),
       ]).then(([past, next, day]) => {
         if (!alive) return
-        const keep = e => (e.strLeague === 'FIFA World Cup' || String(e.idLeague) === WC_LEAGUE) &&
+        const keep = (/** @type {Record<string, any>} */ e) =>
+          (e.strLeague === 'FIFA World Cup' || String(e.idLeague) === WC_LEAGUE) &&
           (!e.strSeason || e.strSeason === WC_SEASON)
-        const norm = arr => (arr || []).filter(keep).map(normEvent)
+        const norm = (/** @type {Record<string, any>[] | undefined} */ arr) =>
+          (arr || []).filter(keep).map(normEvent)
 
         const results = norm(past.events).sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
         const fixtures = norm(next.events).sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime())
@@ -279,6 +305,7 @@ export function useLiveWorldCup() {
 }
 
 // ---- Kickoff countdown ----
+/** @param {string} iso */
 export function useCountdown(iso) {
   const [ms, setMs] = useState(() => new Date(iso).getTime() - Date.now())
   useEffect(() => {
@@ -289,5 +316,5 @@ export function useCountdown(iso) {
   const h = Math.floor(clamped / 3.6e6)
   const m = Math.floor((clamped % 3.6e6) / 6e4)
   const s = Math.floor((clamped % 6e4) / 1000)
-  return { h, m, s, done: ms <= 0, pad: (n) => String(n).padStart(2, '0') }
+  return { h, m, s, done: ms <= 0, pad: (/** @type {number} */ n) => String(n).padStart(2, '0') }
 }

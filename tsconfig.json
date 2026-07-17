@@ -8,10 +8,10 @@
     "allowJs": true,
     "checkJs": true,
     "noEmit": true,
-    // Strict minus noImplicitAny: implicit-any is annotation noise in plain
-    // JS, while null-safety and correct comparisons are real bug-finders.
+    // FULL strict — including noImplicitAny: every parameter and collection in
+    // the logic layer carries an explicit JSDoc type, so null-safety, correct
+    // comparisons AND untyped-input mistakes are all compile errors.
     "strict": true,
-    "noImplicitAny": false,
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",

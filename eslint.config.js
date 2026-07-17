@@ -42,7 +42,27 @@ export default [
       // console.warn/error are legitimate operational signals; console.log
       // left behind from debugging is not.
       'no-console': ['error', { allow: ['warn', 'error'] }],
+
+      // Maintainability ceilings. Ratchets like the coverage thresholds: set
+      // just above the worst the codebase currently measures, so any change
+      // that makes a function harder to reason about fails lint instead of
+      // slipping through review. The complexity ceiling is 35, not the classic
+      // 20, because null-safe JSX rendering (`x?.y`, `a || b`, `cond && <el>`)
+      // counts a branch per operator — the worst offenders were refactored
+      // (FanTransport 62 → 23) and the rest sit in the 21–34 band. Tighten as
+      // components get decomposed.
+      complexity: ['error', 35],
+      'max-depth': ['error', 4],
+      'max-nested-callbacks': ['error', 4],
+      'max-params': ['error', 5],
+      'max-lines': ['error', { max: 420, skipBlankLines: true, skipComments: true }],
     },
+  },
+
+  // Test files enumerate scenarios — length is their nature, not a smell.
+  {
+    files: ['tests/**'],
+    rules: { 'max-lines': 'off' },
   },
 
   // CLI scripts report through stdout — console.log IS their output channel.

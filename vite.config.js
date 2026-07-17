@@ -50,9 +50,9 @@ export default defineConfig(({ mode }) => {
         exclude: ['src/main.jsx'],
         reporter: ['text', 'html', 'lcov'],
         // Ratchet, not target: CI fails if coverage ever drops below the
-        // level the suite already proves (st 93.6 / br 85.0 / fn 91.3 / ln
-        // 97.0 as of 2026-07-14). Raise as the suite grows.
-        thresholds: { statements: 91, branches: 81, functions: 88, lines: 95 },
+        // level the suite already proves (st 94.2 / br 87.1 / fn 92.3 / ln
+        // 97.2 as of 2026-07-17). Raise as the suite grows.
+        thresholds: { statements: 92, branches: 85, functions: 90, lines: 96 },
       },
     },
     build: {

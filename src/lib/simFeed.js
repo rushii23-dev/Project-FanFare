@@ -14,7 +14,7 @@ import { useEffect } from 'react'
 // no other component changes, because they all read the same zone/gate shape.
 // ============================================================
 
-export const SIM_ACTIVE = true
+const SIM_ACTIVE = true
 
 const ZONE_SEED = [
   { id: 'N1', name: 'North Stand — Lower', capacity: 11200, current: 8400 },
@@ -39,20 +39,31 @@ const GATE_SEED = [
   { id: 'F', waitMin: 0, isClosed: true, stepFree: false },
 ]
 
+/**
+ * @typedef {{ id: string, name: string, capacity: number, current: number, trend: number }} SimZone
+ * @typedef {{ id: string, waitMin: number, isClosed: boolean, stepFree: boolean, density: number }} SimGate
+ * @typedef {{ mode: string, share: number }} SimModeShare
+ */
+
+/** @param {number} n @param {number} lo @param {number} hi */
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n))
+/** @param {number} spread */
 const jitter = (spread) => (Math.random() - 0.5) * 2 * spread
 
+/** @returns {SimZone[]} */
 export function createSimZones() {
   return ZONE_SEED.map(z => ({ ...z, trend: 0 }))
 }
 
+/** @returns {SimGate[]} */
 export function createSimGates() {
   // Density is derived from wait, so the two never contradict each other.
   return GATE_SEED.map(g => ({ ...g, density: g.isClosed ? 0 : clamp(Math.round(g.waitMin * 5), 0, 100) }))
 }
 
 /** One tick of the simulation: a bounded random walk, so numbers drift the way
- *  a real crowd does rather than teleporting. */
+ *  a real crowd does rather than teleporting.
+ *  @param {SimZone[]} zones */
 export function stepZones(zones) {
   return zones.map(z => {
     const delta = Math.round(jitter(z.capacity * 0.012))
@@ -61,6 +72,7 @@ export function stepZones(zones) {
   })
 }
 
+/** @param {SimGate[]} gates */
 export function stepGates(gates) {
   return gates.map(g => {
     if (g.isClosed) return { ...g, waitMin: 0, density: 0 }
@@ -89,6 +101,7 @@ export function createSimModeShare() {
   return MODE_SEED.map(m => ({ ...m }))
 }
 
+/** @param {SimModeShare[]} split */
 export function stepModeShare(split) {
   const drifted = split.map(m => ({ ...m, share: Math.max(0.01, m.share + jitter(0.012)) }))
   const total = drifted.reduce((s, m) => s + m.share, 0)
@@ -98,6 +111,9 @@ export function stepModeShare(split) {
 /**
  * Drives the simulated feed into App state. Seeds immediately on mount so the
  * dashboards are never briefly empty, then ticks every `ms`.
+ * @param {(update: SimZone[] | ((zones: SimZone[]) => SimZone[])) => void} setZones
+ * @param {(update: SimGate[] | ((gates: SimGate[]) => SimGate[])) => void} setGates
+ * @param {{ active?: boolean, ms?: number }} [options]
  */
 export function useVenueSim(setZones, setGates, { active = SIM_ACTIVE, ms = 5000 } = {}) {
   useEffect(() => {

@@ -8,9 +8,7 @@
 export const C = { blue: '#2aa5e0', green: '#2fa24e', red: '#e23a45' }
 
 export const triad = [C.blue, C.green, C.red]
-export const triadSoft = ['rgba(42,165,224,0.16)', 'rgba(47,162,78,0.16)', 'rgba(226,58,69,0.16)']
-export const triadBorder = ['rgba(42,165,224,0.34)', 'rgba(47,162,78,0.34)', 'rgba(226,58,69,0.34)']
-export const triadGhost = ['rgba(42,165,224,0.09)', 'rgba(47,162,78,0.09)', 'rgba(226,58,69,0.09)']
+const triadGhost = ['rgba(42,165,224,0.09)', 'rgba(47,162,78,0.09)', 'rgba(226,58,69,0.09)']
 
 // Role → accent color mapping. WCAG-AA as text on white (fan 5.2:1,
 // staff 5.9:1, organizer 4.9:1), verified with axe — don't brighten
@@ -21,10 +19,6 @@ export const roleAccent = { fan: '#0a7d3e', staff: '#915700', organizer: '#e4002
 // World Cup 2026 feed via `useVenue()` in src/lib/venue.js — whichever stadium
 // the live/next match is actually at. There is deliberately no fallback
 // stadium: a confidently-displayed wrong venue is worse than "resolving…".
-//
-// Kept only as a map centring hint for the brief moment before the real venue
-// geocodes — never shown as a venue name, never fed to the AI.
-export const US_MAP_CENTER = { lat: 39.5, lon: -98.35 }
 
 // ---- Scoreboard trust strip (animated count-up) ----
 export const scoreboard = [
@@ -106,8 +100,7 @@ export const problems = [
   { text: 'A stadium of this size generates enormous waste, and organizers fly blind until it\u2019s too late to act.', accent: '#2aa5e0' },
 ]
 
-// Fabricated impact metrics removed \u2014 no unverified numbers on the site.
-export const stats = []
+// REMOVED: fabricated impact metrics \u2014 no unverified numbers on the site.
 
 export const commitments = [
   { glyph: '♿', accent: '#2aa5e0', title: 'Accessibility, by default', body: 'Set your needs once \u2014 wheelchair access, sensory-sensitive routes, large-text and audio content \u2014 and every screen adapts. Help is one tap away.' },
@@ -242,8 +235,8 @@ export const languages = [
 // by the fan's real geocoded origin and the real venue — see FanTransport and
 // src/lib/carbon.js.
 
-// ---- Rewards catalog (empty until a real rewards program is connected) ----
-export const rewardsCatalog = []
+// REMOVED: placeholder rewards catalog — nothing ships until a real rewards
+// program is connected.
 
 // ---- Dashboard navigation definitions ----
 export const fanTabs = [
@@ -282,5 +275,5 @@ export const organizerTabs = [
 // real ticket or the real stadium. See `generalGuidance` above, which is the
 // honest replacement: true of stadiums in general, and labelled as such.
 
-// ---- Analytics data (Organizer) — empty until real telemetry is flowing ----
-export const analyticsStats = []
+// REMOVED: placeholder organizer analytics — nothing ships until real
+// telemetry is flowing.

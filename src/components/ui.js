@@ -20,7 +20,6 @@ export const FIFA = {
 }
 // Signature gradients.
 export const TRIONDA = 'linear-gradient(100deg, #0e9f4f 0%, #f5b301 52%, #e4002b 100%)'
-export const PITCHGRAD = 'linear-gradient(100deg, #0a7a3c 0%, #0e9f4f 34%, #7ed957 66%, #f5b301 100%)'
 export const TRIONDA_TEXT = 'linear-gradient(100deg,#0a7a3c 0%,#0e9f4f 26%,#f5b301 55%,#e4002b 80%,#0a7a3c 100%)'
 
 // Per-role accent triad {color, soft, border, glow} — green / gold / red.
@@ -47,26 +46,3 @@ export const eyebrow = {
   color: '#ffffff',
 }
 
-// Primary white pill CTA.
-export const ctaWhite = {
-  fontFamily: HANKEN,
-  fontWeight: 600,
-  fontSize: 15,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  color: '#000000',
-  background: '#ffffff',
-  borderRadius: 32,
-}
-
-// Outlined pill button.
-export const ctaOutline = {
-  fontFamily: HANKEN,
-  fontWeight: 500,
-  fontSize: 15,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  color: '#f4f4f4',
-  border: '1px solid rgba(255,255,255,0.4)',
-  borderRadius: 32,
-}

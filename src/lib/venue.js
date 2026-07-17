@@ -20,6 +20,10 @@ import { useLiveWorldCup, geocodeCity } from './freeApis.js'
 // usage policy asks us not to hammer it.
 const GEO_CACHE = 'ff-venue-geo-v1'
 
+/**
+ * @param {string | null | undefined} name
+ * @returns {Promise<{ lat: number, lon: number, label: string } | null>}
+ */
 async function geocodeStadium(name) {
   if (!name) return null
   const key = `${GEO_CACHE}:${name}`
@@ -96,6 +100,7 @@ export function useVenue() {
 /**
  * The venue block every AI prompt gets. Says plainly when something is unknown
  * rather than letting the model fill the gap itself.
+ * @param {ReturnType<typeof useVenue> | null | undefined} v
  */
 export function venueForPrompt(v) {
   if (!v?.venue) return 'Match: not yet resolved from the live FIFA World Cup 2026 feed. Do not guess a venue or a fixture.'

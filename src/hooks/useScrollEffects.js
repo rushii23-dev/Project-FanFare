@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 // Reveal-on-scroll + scoreboard count-up.
 // Ported from _reveal() / _countScore() in FanFare.dc.html.
 // Re-runs whenever `screen` changes, since the DOM is swapped out per screen.
+/** @param {string} screen */
 export function useScrollEffects(screen) {
   useEffect(() => {
     const reduce =
@@ -20,6 +21,7 @@ export function useScrollEffects(screen) {
   }, [screen])
 }
 
+/** @param {boolean} reduce */
 function revealOnScroll(reduce) {
   const els = document.querySelectorAll('[data-reveal]:not(.ff-in)')
   if (!els.length) return
@@ -41,6 +43,7 @@ function revealOnScroll(reduce) {
   els.forEach((el) => io.observe(el))
 }
 
+/** @param {boolean} reduce */
 function countScoreboard(reduce) {
   // _ffCounted is our own once-only marker stashed on the DOM node.
   const wrap = /** @type {(HTMLElement & { _ffCounted?: boolean }) | null} */ (
@@ -61,7 +64,7 @@ function countScoreboard(reduce) {
       }
       const dur = 1500
       const start = performance.now() + i * 130
-      const step = (now) => {
+      const step = (/** @type {number} */ now) => {
         const t = Math.min(1, Math.max(0, (now - start) / dur))
         const e = 1 - Math.pow(1 - t, 3)
         el.textContent = Math.round(to * e) + suffix

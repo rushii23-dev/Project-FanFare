@@ -13,7 +13,11 @@
 // Source: DEFRA/BEIS GHG Conversion Factors for Company Reporting.
 // ============================================================
 
+/** @typedef {'walk' | 'cycle' | 'transit' | 'shuttle' | 'carpool' | 'rideshare'} TransportMode */
+/** @typedef {{ lat: number, lon: number }} Coords */
+
 // gCO2e per passenger-km
+/** @type {Record<TransportMode, number>} */
 export const EMISSION_FACTORS = {
   walk: 0,
   cycle: 0,
@@ -23,6 +27,7 @@ export const EMISSION_FACTORS = {
   rideshare: 170, // average petrol car, single occupancy
 }
 
+/** @type {Record<TransportMode, string>} */
 export const MODE_LABEL = {
   walk: 'Walk',
   cycle: 'Cycle',
@@ -34,10 +39,13 @@ export const MODE_LABEL = {
 
 const R = 6371 // km
 
-/** Great-circle distance in km between two coordinates. */
+/**
+ * Great-circle distance in km between two coordinates.
+ * @param {Coords | null | undefined} a @param {Coords | null | undefined} b
+ */
 export function distanceKm(a, b) {
   if (!a || !b) return 0
-  const toRad = d => (d * Math.PI) / 180
+  const toRad = (/** @type {number} */ d) => (d * Math.PI) / 180
   const dLat = toRad(b.lat - a.lat)
   const dLon = toRad(b.lon - a.lon)
   const lat1 = toRad(a.lat)
@@ -46,7 +54,10 @@ export function distanceKm(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h))
 }
 
-/** Round-trip emissions in kg CO2e for one fan travelling `km` each way. */
+/**
+ * Round-trip emissions in kg CO2e for one fan travelling `km` each way.
+ * @param {TransportMode} mode @param {number} km
+ */
 export function emissionsKg(mode, km) {
   const f = EMISSION_FACTORS[mode]
   if (f == null) return 0
@@ -57,9 +68,11 @@ export function emissionsKg(mode, km) {
  * Every mode ranked for this journey, cleanest first. Modes that are not
  * realistic for the distance are dropped rather than shown as absurd options —
  * nobody walks 40km to a stadium.
+ * @param {number} km
  */
 export function rankModes(km) {
-  const viable = Object.keys(EMISSION_FACTORS).filter(m => {
+  const modes = /** @type {TransportMode[]} */ (Object.keys(EMISSION_FACTORS))
+  const viable = modes.filter(m => {
     if (m === 'walk') return km <= 5
     if (m === 'cycle') return km <= 20
     return true
@@ -74,12 +87,18 @@ export function rankModes(km) {
     .sort((a, b) => a.kg - b.kg)
 }
 
-/** kg CO2e saved by taking `mode` instead of driving alone. */
+/**
+ * kg CO2e saved by taking `mode` instead of driving alone.
+ * @param {TransportMode} mode @param {number} km
+ */
 export function savedVsDriving(mode, km) {
   return Math.max(0, emissionsKg('rideshare', km) - emissionsKg(mode, km))
 }
 
-/** Tangible equivalent, so a kg figure means something to a human. */
+/**
+ * Tangible equivalent, so a kg figure means something to a human.
+ * @param {number} kg
+ */
 export function equivalent(kg) {
   // A mature tree sequesters roughly 21 kg CO2 per year.
   const treeDays = (kg / 21) * 365

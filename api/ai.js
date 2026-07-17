@@ -26,24 +26,25 @@ const MAX_PROMPT_CHARS = 12000
 const MAX_SYSTEM_CHARS = 8000
 const MAX_BODY_BYTES = 64 * 1024
 
+/** @param {number} ms */
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 // Belt and braces: an upstream error message should never contain the key, but
 // it is never allowed to reach a browser if it somehow does.
+/** @param {string} text @param {string | undefined} key */
 const scrub = (text, key) => (key ? text.split(key).join('***') : text)
 
 /** @typedef {Error & { code?: string }} CodedError */
-/** @returns {CodedError} */
+/** @param {string} message @param {string} code @returns {CodedError} */
 const codedError = (message, code) => Object.assign(new Error(message), { code })
 
 /**
- * Everything in the request is client-controlled and therefore untrusted —
- * typed unknown so the validation below is the only path to use.
- * @param {{ system?: unknown, prompt?: unknown, json?: unknown, temperature?: unknown }} req
+ * Everything in the request is client-controlled and therefore untrusted.
+ * Throws BAD_REQUEST on anything out of contract; returns the vetted values.
+ * @param {unknown} prompt @param {unknown} system @param {unknown} temperature
+ * @returns {{ prompt: string, system: string | null, temp: number }}
  */
-export async function runAI({ system, prompt, json = false, temperature = 0.4 }) {
-  const key = process.env.GEMINI_API_KEY
-  if (!key) throw codedError('GEMINI_API_KEY is not set on the server', 'NO_KEY')
+function validateRequest(prompt, system, temperature) {
   if (typeof prompt !== 'string' || !prompt.trim()) {
     throw codedError('prompt is required', 'BAD_REQUEST')
   }
@@ -60,8 +61,17 @@ export async function runAI({ system, prompt, json = false, temperature = 0.4 })
     ? Math.min(2, Math.max(0, Number(temperature)))
     : 0.4
 
-  const primary = process.env.GEMINI_MODEL || DEFAULT_MODEL
-  const body = {
+  return { prompt, system: system || null, temp }
+}
+
+/**
+ * The exact request body Gemini gets — one place, so the token budget and
+ * thinking policy cannot drift between the primary and fallback attempts.
+ * @param {{ prompt: string, system: string | null, temp: number }} vetted
+ * @param {unknown} json
+ */
+function buildBody({ prompt, system, temp }, json) {
+  return {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: temp,
@@ -75,6 +85,16 @@ export async function runAI({ system, prompt, json = false, temperature = 0.4 })
     },
     ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
   }
+}
+
+/**
+ * @param {{ system?: unknown, prompt?: unknown, json?: unknown, temperature?: unknown }} req
+ */
+export async function runAI({ system, prompt, json = false, temperature = 0.4 }) {
+  const key = process.env.GEMINI_API_KEY
+  if (!key) throw codedError('GEMINI_API_KEY is not set on the server', 'NO_KEY')
+  const body = buildBody(validateRequest(prompt, system, temperature), json)
+  const primary = process.env.GEMINI_MODEL || DEFAULT_MODEL
 
   // Try the primary model twice, then step down once. Only transient statuses
   // are retried — a bad key fails immediately rather than stalling the UI.
@@ -97,7 +117,7 @@ export async function runAI({ system, prompt, json = false, temperature = 0.4 })
     if (r.ok) {
       const data = await r.json()
       const cand = data?.candidates?.[0]
-      const text = cand?.content?.parts?.map(p => p.text).join('') || ''
+      const text = cand?.content?.parts?.map((/** @type {{ text?: string }} */ p) => p.text).join('') || ''
 
       // A truncated response is worse than no response: half a JSON object parses
       // as garbage or throws deep in a component. Fail it here and let the retry
@@ -127,8 +147,19 @@ export async function runAI({ system, prompt, json = false, temperature = 0.4 })
   throw last
 }
 
+/**
+ * Minimal shape of the Vercel/Node request-response pair this handler touches —
+ * kept local so the dev middleware and the test harness can pass plain objects.
+ * @typedef {AsyncIterable<Buffer> & { method?: string, body?: unknown, headers: Record<string, string | string[] | undefined> }} ApiRequest
+ * @typedef {{ status: (code: number) => { json: (body: unknown) => void }, setHeader?: (name: string, value: string) => void }} ApiResponse
+ */
+
+/** @param {ApiRequest} req @returns {Promise<Record<string, unknown>>} */
 async function readJsonBody(req) {
-  if (req.body && typeof req.body === 'object') return req.body
+  if (req.body && typeof req.body === 'object') {
+    return /** @type {Record<string, unknown>} */ (req.body)
+  }
+  /** @type {Buffer[]} */
   const chunks = []
   let bytes = 0
   for await (const c of req) {
@@ -156,8 +187,10 @@ async function readJsonBody(req) {
 const RATE_LIMIT = 20        // requests
 const RATE_WINDOW_MS = 60000 // per minute, per IP
 const MAX_TRACKED_IPS = 5000 // memory bound under a rotating-IP flood
+/** @type {Map<string, number[]>} */
 const hits = new Map()
 
+/** @param {string} ip */
 function rateLimited(ip) {
   const now = Date.now()
   const windowStart = now - RATE_WINDOW_MS
@@ -185,6 +218,7 @@ function rateLimited(ip) {
   return false
 }
 
+/** @param {ApiRequest} req @param {ApiResponse} res */
 export default async function handler(req, res) {
   // Generated answers are per-request and may embed per-fan context — no
   // intermediary may cache them. (Optional call: the dev middleware and the
@@ -202,7 +236,7 @@ export default async function handler(req, res) {
     return
   }
 
-  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown'
+  const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown'
   if (rateLimited(ip)) {
     res.status(429).json({ error: 'Too many requests', code: 'RATE_LIMIT' })
     return

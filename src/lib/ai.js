@@ -12,12 +12,14 @@ import { useEffect, useState } from 'react'
 // ============================================================
 
 export class AIError extends Error {
+  /** @param {string} message @param {string} code */
   constructor(message, code) {
     super(message)
     this.code = code
   }
 }
 
+/** @param {{ system?: string, prompt: string, json?: boolean, temperature?: number }} payload @returns {Promise<string>} */
 async function post(payload) {
   let r
   try {
@@ -34,7 +36,10 @@ async function post(payload) {
   return data.text || ''
 }
 
-/** Free-text generation. Returns a string. */
+/**
+ * Free-text generation. Returns a string.
+ * @param {{ system?: string, prompt: string, temperature?: number }} req
+ */
 export function askAI({ system, prompt, temperature = 0.4 }) {
   return post({ system, prompt, temperature })
 }
@@ -43,6 +48,7 @@ export function askAI({ system, prompt, temperature = 0.4 }) {
  * Structured generation. Gemini is put in JSON mode, so the response parses
  * cleanly — but we still guard, because a malformed parse must not white-screen
  * a dashboard mid-match.
+ * @param {{ system?: string, prompt: string, temperature?: number }} req
  */
 export async function askAIJson({ system, prompt, temperature = 0.3 }) {
   const raw = await post({ system, prompt, json: true, temperature })
@@ -71,7 +77,10 @@ export function useAIStatus() {
   return status
 }
 
-/** Human-readable reason, for the small "assistant unavailable" note in chat UIs. */
+/**
+ * Human-readable reason, for the small "assistant unavailable" note in chat UIs.
+ * @param {{ code?: string } | null | undefined} e
+ */
 export function aiErrorMessage(e) {
   switch (e?.code) {
     case 'NO_KEY': return 'The assistant is not configured on this deployment (no API key).'
