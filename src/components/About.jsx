@@ -93,7 +93,7 @@ export default function About({ handlers }) {
               {problems.map((pr, i) => {
                 const t = FIFA_TRIAD[i % 3]
                 return (
-                  <div key={i} className="ff-frow" style={{
+                  <div key={pr.text} className="ff-frow" style={{
                     display: 'flex', gap: 16, alignItems: 'flex-start', padding: '18px 20px',
                     background: '#ffffff', border: '1px solid rgba(14,159,79,0.14)', borderRadius: 14,
                     boxShadow: '0 8px 22px rgba(10,60,30,0.05)', '--acc': t.c,
@@ -117,7 +117,7 @@ export default function About({ handlers }) {
               const t = FIFA_TRIAD[i % 3]
               return (
                 <div
-                  key={i}
+                  key={c.title}
                   className="ff-fcard ff-gborder"
                   style={{
                     position: 'relative', overflow: 'hidden', background: '#ffffff',

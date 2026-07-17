@@ -3,6 +3,7 @@ import { BRICOLAGE } from '../ui.js'
 import { BrandMark } from '../Nav.jsx'
 import Icon from '../landing/Icons.jsx'
 import { roleAccent } from '../../data.js'
+import { timeAgo, initials } from '../../lib/format.js'
 import { ToastHost } from './shared/Toast.jsx'
 import LiveScoreBar from './shared/LiveScoreBar.jsx'
 import './DashboardShell.css'
@@ -46,7 +47,7 @@ export default function DashboardShell({
   }
 
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1)
-  const initials = (userName || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+  const avatarInitials = initials(userName, { max: 2 })
 
   return (
     <div className="ff-dashboard" style={{ '--ff-accent': accent }}>
@@ -83,7 +84,7 @@ export default function DashboardShell({
               onClick={() => { setShowAvatar(p => !p); setShowNotifs(false) }}
               aria-label="Profile menu" aria-expanded={showAvatar}
             >
-              {initials}
+              {avatarInitials}
             </button>
             {showAvatar && (
               <div className="ff-avatar-menu" role="menu">
@@ -182,7 +183,7 @@ function NotificationPanel({ notifications, accent, onMarkRead, onClose, onViewA
             >
               <div style={{ fontSize: 14, fontWeight: n.read ? 500 : 700, color: n.read ? 'var(--muted)' : 'var(--text)' }}>{n.title}</div>
               <div style={{ fontSize: 13, color: 'var(--faint)', marginTop: 4, lineHeight: 1.4 }}>{n.body}</div>
-              <div style={{ fontSize: 11, color: 'var(--faint-2)', marginTop: 6 }}>{_timeAgo(n.time)}</div>
+              <div style={{ fontSize: 11, color: 'var(--faint-2)', marginTop: 6 }}>{timeAgo(n.time)}</div>
             </div>
           ))
         )}
@@ -203,14 +204,4 @@ function NotificationPanel({ notifications, accent, onMarkRead, onClose, onViewA
       )}
     </div>
   )
-}
-
-function _timeAgo(iso) {
-  const diff = Date.now() - new Date(iso).getTime()
-  const min = Math.floor(diff / 60000)
-  if (min < 1) return 'Just now'
-  if (min < 60) return `${min}m ago`
-  const hrs = Math.floor(min / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  return `${Math.floor(hrs / 24)}d ago`
 }

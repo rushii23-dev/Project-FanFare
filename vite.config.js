@@ -44,11 +44,15 @@ export default defineConfig(({ mode }) => {
         // Only code that can actually execute in tests is measured: the lib
         // layer, the API handler, and the components the journey tests mount.
         include: ['src/**/*.{js,jsx}', 'api/**/*.js'],
+        // main.jsx is the ReactDOM bootstrap — it runs only in a real browser
+        // (the Playwright a11y gate exercises it on all 24 screens), so it has
+        // no meaningful jsdom unit to measure.
+        exclude: ['src/main.jsx'],
         reporter: ['text', 'html', 'lcov'],
         // Ratchet, not target: CI fails if coverage ever drops below the
-        // level the suite already proves (st 66.5 / br 51.6 / fn 56.4 / ln
-        // 71.9 as of 2026-07-12). Raise as the suite grows.
-        thresholds: { statements: 64, branches: 49, functions: 54, lines: 69 },
+        // level the suite already proves (st 93.6 / br 85.0 / fn 91.3 / ln
+        // 97.0 as of 2026-07-14). Raise as the suite grows.
+        thresholds: { statements: 91, branches: 81, functions: 88, lines: 95 },
       },
     },
     build: {

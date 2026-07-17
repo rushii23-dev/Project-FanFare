@@ -1,4 +1,5 @@
 import { BRICOLAGE, HANKEN } from '../../ui.js'
+import { shortTime } from '../../../lib/format.js'
 import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 import StatCard from '../shared/StatCard.jsx'
@@ -40,7 +41,6 @@ export default function StaffDashboard({ nav, staffRoster, tasks, zones, onUpdat
   const taskPct = Math.round((done / tasks.length) * 100)
   const upNext = tasks.filter(t => t.status !== 'done').slice(0, 3)
 
-  const fmt = t => { const d = new Date(t); return isNaN(d) ? t : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) }
   const setDuty = (v) => { onUpdateStaff(prev => prev.map((s, i) => i === 0 ? { ...s, status: v } : s)); toast(`Status: ${v.replace('-', ' ')}`, { accent: ACCENT }) }
   const complete = (id) => { onUpdateTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'done' } : t)); toast('Task completed', { accent: '#0a7d3e' }) }
 
@@ -60,7 +60,7 @@ export default function StaffDashboard({ nav, staffRoster, tasks, zones, onUpdat
           <Panel title="My shift" icon="clock" accent={ACCENT} className="ff-rise-card ff-st5">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
               <div>
-                <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{fmt(me.shiftStart)} — {fmt(me.shiftEnd)}</div>
+                <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{shortTime(me.shiftStart)} — {shortTime(me.shiftEnd)}</div>
                 <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>{me.role} · assigned to Zone {me.zone}</div>
               </div>
               <div style={{ display: 'inline-flex', gap: 6, background: 'var(--elev-2)', padding: 5, borderRadius: 30, border: '1px solid var(--line)' }}>

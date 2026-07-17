@@ -116,7 +116,7 @@ Open the printed `localhost` URL. That's it.
 ```bash
 npm run build      # production build → dist/
 npm run preview    # preview that build locally
-npm test           # run the test suite (127 tests)
+npm test           # run the test suite (269 tests)
 npm run test:coverage  # same suite with enforced coverage thresholds
 npm run test:a11y  # WCAG 2.1 A/AA + 2.2 AA axe audit of every screen (build first)
 npm run lint       # ESLint incl. static accessibility (jsx-a11y) rules
@@ -131,8 +131,8 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 
 | Check | Command | Result |
 |---|---|---|
-| Tests | `npm test` | **127 tests, 10 suites, all passing** |
-| Coverage | `npm run test:coverage` | **thresholds enforced in CI** — a PR that drops coverage fails |
+| Tests | `npm test` | **269 tests, 16 suites, all passing** |
+| Coverage | `npm run test:coverage` | **93% statements · 85% branches · 91% functions · 97% lines**, thresholds enforced in CI — a PR that drops coverage fails |
 | Accessibility | `npm run build && npm run test:a11y` | **WCAG 2.1 A/AA + 2.2 AA, zero axe violations on all 24 screens** — every dashboard tab of every role, in a real browser, enforced in CI |
 | Lint | `npm run lint` | **0 errors** (react-hooks correctness + jsx-a11y accessibility rules run as errors) |
 | Types | `npm run typecheck` | **0 errors** — strict `tsc --checkJs` (null-safety on) over `src/lib`, `src/hooks`, `src/data.js` and the API proxy, enforced in CI |
@@ -147,6 +147,7 @@ Nothing below is a claim you have to take on trust. Every line is a command you 
 - **Cross-portal behavior, not just rendering** — a staff member files an incident and the test proves it arrives in the organizer's triage queue AND rings their notification bell, then resolves it and watches the counts change; a fan saves a real ticket and the gate/zone panels populate from it (and provably refuse to invent data for a half-filled ticket)
 - **The offline-honesty layer** — every free-API helper (weather, FX, translation, geocoding) and the venue resolver are unit-tested to degrade to an honest fallback, never a fabricated value, when the network fails
 - **The live-feed engine** — the logic that picks which match the score bar features is tested across every phase (in-play with real minute and lead flags, half-time, upcoming, full-time), proves a finished match is never presented as live, filters foreign leagues/seasons, and never invents a score
+- **Every role dashboard, behaviorally** — staff duty switching and task completion, voice-dictated incident intake with the AI drafting mocked at the module boundary (and its manual fallback when no key is configured), organizer accept/dismiss of recommended actions, heatmap zone drill-in, incident triage assign/resolve, and both Gemini analyst surfaces including their honest failure and empty states
 - **Rate-limiter integrity under attack** — a blocked IP stays blocked while 5,000+ rotating IPs flood the endpoint; eviction reclaims memory only from under-limit entries
 
 **Security posture:**

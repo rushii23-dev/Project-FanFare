@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import {
   weatherMeta, translate, geocodeCity, useRates, useWeather, useCountdown,
+  useTeam, useWorldCup,
 } from '../src/lib/freeApis.js'
 
 // In-memory localStorage: this Node/jsdom pairing ships a non-functional one
@@ -147,6 +148,167 @@ describe('useWeather', () => {
     const { result } = renderHook(() => useWeather(40.81, -74.07))
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.live).toBe(false)
+  })
+})
+
+describe('useTeam', () => {
+  it('resolves a crest from the sports database', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () =>
+      jsonResponse({ teams: [{ strBadge: 'https://img/crest.png' }] })))
+    const { result } = renderHook(() => useTeam('Mexico'))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.crest).toBe('https://img/crest.png')
+  })
+
+  it('reports no crest — not a placeholder image — when the lookup fails', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('offline') }))
+    const { result } = renderHook(() => useTeam('Mexico'))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.crest).toBeNull()
+  })
+})
+
+// ---- Live FIFA World Cup 2026 feed ------------------------------------------
+
+// A realistic TheSportsDB event, WC-2026 by default.
+const sportsDbEvent = (over = {}) => ({
+  idEvent: 'e1', strEvent: 'USA vs Mexico', strHomeTeam: 'USA', strAwayTeam: 'Mexico',
+  intHomeScore: '2', intAwayScore: '1', strTimestamp: '2026-07-13 19:00:00',
+  strVenue: 'AT&T Stadium', strCity: 'Arlington', strStatus: 'FT', strProgress: '',
+  strHomeTeamBadge: 'usa.png', strAwayTeamBadge: 'mex.png', strRound: 'Group A',
+  strThumb: '', strSeason: '2026', strLeague: 'FIFA World Cup', idLeague: '4429',
+  strLeagueBadge: 'wc.png',
+  ...over,
+})
+
+const stubWorldCupFeed = ({ past = [], next = [], day = [] } = {}) => {
+  vi.stubGlobal('fetch', vi.fn(async (url) => jsonResponse(
+    String(url).includes('eventspastleague') ? { events: past }
+      : String(url).includes('eventsnextleague') ? { events: next }
+        : String(url).includes('eventsday') ? { events: day }
+          : {},
+  )))
+}
+
+// The hook memoises the feed in a module-level cache so dashboards paint
+// instantly on tab switches. Tests need a cold cache, so each one imports a
+// fresh copy of the module.
+async function freshLiveWorldCup() {
+  vi.resetModules()
+  const mod = await import('../src/lib/freeApis.js')
+  return mod.useLiveWorldCup
+}
+
+describe('useWorldCup', () => {
+  it('splits the feed into ordered results and fixtures with the league badge', async () => {
+    stubWorldCupFeed({
+      past: [sportsDbEvent(), sportsDbEvent({ idEvent: 'e0', strTimestamp: '2026-07-12 19:00:00' })],
+      next: [sportsDbEvent({ idEvent: 'e2', strStatus: 'NS', strTimestamp: '2026-07-15 19:00:00' })],
+    })
+    const { result } = renderHook(() => useWorldCup())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.live).toBe(true)
+    expect(result.current.results.map(r => r.id)).toEqual(['e1', 'e0']) // newest first
+    expect(result.current.fixtures).toHaveLength(1)
+    expect(result.current.leagueBadge).toBe('wc.png')
+  })
+
+  it('reports an empty, not-live feed when the source has nothing', async () => {
+    stubWorldCupFeed({})
+    const { result } = renderHook(() => useWorldCup())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.live).toBe(false)
+    expect(result.current.results).toEqual([])
+  })
+})
+
+describe('useLiveWorldCup', () => {
+  it('features an in-play match with the real minute, score and lead', async () => {
+    stubWorldCupFeed({
+      day: [sportsDbEvent({ strStatus: "23'", strProgress: '23', intHomeScore: '1', intAwayScore: '0' })],
+    })
+    const useLiveWorldCup = await freshLiveWorldCup()
+    const { result } = renderHook(() => useLiveWorldCup())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    expect(result.current.live).toBe(true)
+    expect(result.current.view).toMatchObject({
+      phase: 'LIVE', minuteLabel: "23'", hasScore: true,
+      homeLead: true, awayLead: false,
+      homeCode: 'USA', awayCode: 'MEX',
+    })
+    expect(result.current.view.progress).toBeCloseTo(23 / 90)
+  })
+
+  it('features the deepest in-play match when several run at once', async () => {
+    stubWorldCupFeed({
+      day: [
+        sportsDbEvent({ idEvent: 'early', strStatus: '12', strProgress: '12' }),
+        sportsDbEvent({ idEvent: 'late', strStatus: '88', strProgress: '88' }),
+      ],
+    })
+    const useLiveWorldCup = await freshLiveWorldCup()
+    const { result } = renderHook(() => useLiveWorldCup())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.featured.id).toBe('late')
+    expect(result.current.view.minuteLabel).toBe("88'")
+  })
+
+  it('labels half time and extra time statuses like a broadcaster', async () => {
+    stubWorldCupFeed({ day: [sportsDbEvent({ strStatus: 'HT', strProgress: '' })] })
+    let useLiveWorldCup = await freshLiveWorldCup()
+    const ht = renderHook(() => useLiveWorldCup())
+    await waitFor(() => expect(ht.result.current.loading).toBe(false))
+    expect(ht.result.current.view.phase).toBe('HT')
+    expect(ht.result.current.view.minuteLabel).toBe('HT')
+
+    stubWorldCupFeed({ day: [sportsDbEvent({ strStatus: 'Extra Time', strProgress: '' })] })
+    useLiveWorldCup = await freshLiveWorldCup()
+    const et = renderHook(() => useLiveWorldCup())
+    await waitFor(() => expect(et.result.current.loading).toBe(false))
+    expect(et.result.current.view.minuteLabel).toBe('Extra time')
+
+    stubWorldCupFeed({ day: [sportsDbEvent({ strStatus: 'Penalty', strProgress: '' })] })
+    useLiveWorldCup = await freshLiveWorldCup()
+    const pens = renderHook(() => useLiveWorldCup())
+    await waitFor(() => expect(pens.result.current.loading).toBe(false))
+    expect(pens.result.current.view.minuteLabel).toBe('Live')
+  })
+
+  it('falls back to the next kickoff when nothing is in play', async () => {
+    stubWorldCupFeed({
+      next: [sportsDbEvent({ strStatus: 'NS', intHomeScore: null, intAwayScore: null, strTimestamp: '2026-07-15 19:00:00' })],
+    })
+    const useLiveWorldCup = await freshLiveWorldCup()
+    const { result } = renderHook(() => useLiveWorldCup())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.live).toBe(false)
+    expect(result.current.view.phase).toBe('UPCOMING')
+    expect(result.current.view.hasScore).toBe(false)
+    expect(result.current.view.progress).toBe(0)
+    expect(result.current.view.minuteLabel).toMatch(/\d/) // a kickoff clock time
+  })
+
+  it('falls back to the latest result after the final whistle', async () => {
+    stubWorldCupFeed({ past: [sportsDbEvent()] })
+    const useLiveWorldCup = await freshLiveWorldCup()
+    const { result } = renderHook(() => useLiveWorldCup())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.view.phase).toBe('FT')
+    expect(result.current.view.minuteLabel).toBe('FT')
+    expect(result.current.view.progress).toBe(1)
+  })
+
+  it('refuses events from other leagues or seasons — WC 2026 only', async () => {
+    stubWorldCupFeed({
+      day: [sportsDbEvent({ strLeague: 'Friendly', idLeague: '999', strStatus: '10', strProgress: '10' })],
+      past: [sportsDbEvent({ strSeason: '2022' })],
+    })
+    const useLiveWorldCup = await freshLiveWorldCup()
+    const { result } = renderHook(() => useLiveWorldCup())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.featured).toBeNull()
+    expect(result.current.view).toBeFalsy()
   })
 })
 

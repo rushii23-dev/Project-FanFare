@@ -33,6 +33,12 @@ export default [
       'no-unneeded-ternary': 'error',
       'object-shorthand': 'error',
       'prefer-template': 'error',
+      'no-duplicate-imports': 'error',
+      'prefer-object-spread': 'error',
+      'no-useless-concat': 'error',
+      'no-useless-rename': 'error',
+      'no-multi-assign': 'error',
+      'default-case-last': 'error',
       // console.warn/error are legitimate operational signals; console.log
       // left behind from debugging is not.
       'no-console': ['error', { allow: ['warn', 'error'] }],

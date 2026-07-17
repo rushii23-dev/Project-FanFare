@@ -1,5 +1,6 @@
 import { BRICOLAGE, HANKEN } from '../../ui.js'
 import Icon from '../../landing/Icons.jsx'
+import { initials, shortTime } from '../../../lib/format.js'
 import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 import StatCard from '../shared/StatCard.jsx'
@@ -24,9 +25,8 @@ export default function StaffProfile({ staffRoster, tasks, incidents, onLogout }
     )
   }
   const mine = (incidents || []).filter(i => i.reportedBy === me.name)
-  const initials = me.name.split(' ').map(w => w[0]).join('').toUpperCase()
+  const avatarInitials = initials(me.name)
   const doneToday = tasks.filter(t => t.status === 'done').length
-  const fmt = t => { const d = new Date(t); return isNaN(d) ? t : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) }
 
   return (
     <div>
@@ -41,7 +41,7 @@ export default function StaffProfile({ staffRoster, tasks, incidents, onLogout }
       <div className="ff-two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 18, alignItems: 'start' }}>
         <Panel className="ff-rise-card ff-st4" accent={ACCENT}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-            <span style={{ width: 64, height: 64, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 24, background: 'linear-gradient(150deg,#c8890a,#8a5200)' }}>{initials}</span>
+            <span style={{ width: 64, height: 64, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 24, background: 'linear-gradient(150deg,#c8890a,#8a5200)' }}>{avatarInitials}</span>
             <div>
               <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{me.name}</div>
               <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 3 }}>{me.role} · Zone {me.zone}</div>
@@ -51,7 +51,7 @@ export default function StaffProfile({ staffRoster, tasks, incidents, onLogout }
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 12px' }}>
-            {[['Shift start', fmt(me.shiftStart)], ['Shift end', fmt(me.shiftEnd)], ['Role', me.role], ['Zone', `Zone ${me.zone}`]].map(([k, v]) => (
+            {[['Shift start', shortTime(me.shiftStart)], ['Shift end', shortTime(me.shiftEnd)], ['Role', me.role], ['Zone', `Zone ${me.zone}`]].map(([k, v]) => (
               <div key={k}>
                 <div style={{ fontSize: 10.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--faint)', marginBottom: 3 }}>{k}</div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{v}</div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Icon from '../../landing/Icons.jsx'
+import { timeAgo } from '../../../lib/format.js'
 import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 import { toast } from '../shared/Toast.jsx'
@@ -7,7 +8,6 @@ import { toast } from '../shared/Toast.jsx'
 const FILTERS = [['all', 'All'], ['new', 'New'], ['assigned', 'Assigned'], ['resolved', 'Resolved']]
 const sevClass = s => `ff-chip ff-chip-${s === 'high' ? 'high' : s === 'medium' ? 'medium' : 'low'}`
 const statusClass = s => `ff-chip ff-chip-${s === 'resolved' ? 'resolved' : s === 'assigned' ? 'assigned' : 'new'}`
-function timeAgo(iso) { const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000); if (m < 1) return 'Just now'; if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); return h < 24 ? `${h}h ago` : `${Math.floor(h / 24)}d ago` }
 
 export default function OrganizerIncidents({ incidents, staffRoster, onUpdateIncidents }) {
   const [filter, setFilter] = useState('all')

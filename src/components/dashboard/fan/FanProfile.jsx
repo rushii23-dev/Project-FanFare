@@ -1,6 +1,7 @@
 import { BRICOLAGE, HANKEN } from '../../ui.js'
 import Icon from '../../landing/Icons.jsx'
 import { languages } from '../../../data.js'
+import { initials } from '../../../lib/format.js'
 import PageHead from '../shared/PageHead.jsx'
 import Panel from '../shared/Panel.jsx'
 import DataPending from '../shared/DataPending.jsx'
@@ -12,7 +13,7 @@ export default function FanProfile({ fanProfile, onUpdateProfile, onLogout }) {
   const a = fanProfile.accessibility
   const activeA11y = Object.entries(a).filter(([, v]) => v).map(([k]) => k)
   const displayName = fanProfile.name || 'Fan'
-  const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase()
+  const avatarInitials = initials(displayName)
 
   return (
     <div>
@@ -21,7 +22,7 @@ export default function FanProfile({ fanProfile, onUpdateProfile, onLogout }) {
       <div className="ff-fan-profile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start' }}>
         <Panel className="ff-rise-card ff-st1" accent={ACCENT}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22 }}>
-            <span style={{ width: 64, height: 64, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 24, background: 'linear-gradient(150deg,#0a7d3e,#0a7a3c)', boxShadow: '0 8px 20px rgba(14,159,79,0.3)' }}>{initials}</span>
+            <span style={{ width: 64, height: 64, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 24, background: 'linear-gradient(150deg,#0a7d3e,#0a7a3c)', boxShadow: '0 8px 20px rgba(14,159,79,0.3)' }}>{avatarInitials}</span>
             <div>
               <div style={{ fontFamily: BRICOLAGE, fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>{displayName}</div>
               <div style={{ fontSize: 13.5, color: 'var(--muted)', marginTop: 3 }}>{fanProfile.email || 'Create an account to save your details'}</div>
