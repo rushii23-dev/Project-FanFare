@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@fontsource/bricolage-grotesque": "^5.2.10",
+    "@fontsource/bricolage-grotesque": "^5.3.0",
     "@fontsource/hanken-grotesk": "^5.2.8",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",
