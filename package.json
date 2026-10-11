@@ -25,21 +25,21 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/react": "^16.3.2",
-    "@types/node": "^26.1.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.4",
     "@types/react": "^19.2.17",
     "@vitejs/plugin-react": "^5.2.0",
-    "@vitest/coverage-v8": "^4.1.10",
-    "axe-core": "^4.12.1",
-    "eslint": "^10.7.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "axe-core": "^4.14.0",
+    "eslint": "^10.12.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "globals": "^17.7.0",
+    "globals": "^17.13.0",
     "jsdom": "^29.1.1",
-    "playwright-core": "1.61",
+    "playwright-core": "1.64",
     "typescript": "^7.0.2",
-    "vite": "^7.3.6",
-    "vitest": "^4.1.10"
+    "vite": "^7.3.7",
+    "vitest": "^4.1.11"
   }
 }
